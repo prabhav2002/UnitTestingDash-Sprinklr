@@ -445,11 +445,13 @@ def donwload_overall(n_clicks):
 @app.callback(
     Output("teamdev_analytics_df", "data"),
     Input("teamdev-dropdown-exportpage", "value"),
+    Input("exp-date-picker-range", "start_date"),
+    Input("exp-date-picker-range", "end_date"),
     prevent_initial_call=True,
 )
-def dfjson_dev_exportpage(teamname):
+def dfjson_dev_exportpage(teamname, startdate, enddate):
     global dfjson_teamdev
-    dfjson_teamdev = exportpage_row4(teamname)
+    dfjson_teamdev = exportpage_row4(teamname, startdate, enddate)
     return dfjson_teamdev
 
 

@@ -71,8 +71,19 @@ layout = html.Div(
                 dbc.Row(
                     [
                         dbc.Col(
-                            html.H6(
+                            html.H3(
                                 "Select a date range to get the stats of that specific time-period",
+                                className="text-center",
+                            ),
+                            className="mb-5",
+                        )
+                    ]
+                ),
+                dbc.Row(
+                    [
+                        dbc.Col(
+                            html.H4(
+                                "(for Team-wise stats as well as stats of developers of selected team)",
                                 className="text-center",
                             ),
                             className="mb-5",
@@ -126,6 +137,17 @@ layout = html.Div(
                     ],
                     className="mb-5",
                 ),
+                dbc.Row(
+                    [
+                        dbc.Col(
+                            html.H3(
+                                "Plot of Team-wise Analytics in the selected Date Range",
+                                className="text-center",
+                            ),
+                            className="mb-5",
+                        )
+                    ]
+                ),
                 # multi team select dropdown
                 dbc.Row(
                     [
@@ -175,22 +197,8 @@ layout = html.Div(
                 dbc.Row(
                     [
                         dbc.Col(
-                            html.H4(
-                                "Test Cases Stats of Developers group by Teams",
-                                className="text-center",
-                            ),
-                            className="mb-5 mt-5",
-                        )
-                    ]
-                ),
-                dbc.Row(
-                    [
-                        dbc.Col(
-                            html.H5(
-                                children="DateRange of below Stats, From: "
-                                + str(min_date)[0:10]
-                                + " To: "
-                                + str(max_date)[0:10],
+                            html.H3(
+                                "Plot of Developer-wise Analytics for the selected team in the selected Date Range",
                                 className="text-center",
                             ),
                             className="mb-5",
@@ -258,8 +266,10 @@ def get_figure_teampage(
     [
         Input("team-dropdown", "value"),
         Input("testCaseteam2-dropdown", "value"),
+        Input("team-date-picker-range", "start_date"),
+        Input("team-date-picker-range", "end_date"),
     ],
 )
-def get_figure_teamWiseDev(team, testCaseType):
-    fig = teampage_row4(team, testCaseType)
+def get_figure_teamWiseDev(team, testCaseType, startdate, enddate):
+    fig = teampage_row4(team, testCaseType, startdate, enddate)
     return fig

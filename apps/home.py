@@ -281,6 +281,17 @@ layout = html.Div(
                     ],
                     className="mb-5",
                 ),
+                dbc.Row(
+                    [
+                        dbc.Col(
+                            html.H3(
+                                "Plot of Overall Analytics in the selected Date Range",
+                                className="text-center",
+                            ),
+                            className="mb-5",
+                        )
+                    ]
+                ),
                 # dropdown for date-wise, week-wise, month-wise aggregation
                 dcc.Dropdown(
                     [

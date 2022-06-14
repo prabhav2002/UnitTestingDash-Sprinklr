@@ -59,7 +59,7 @@ layout = html.Div(
                 dbc.Row(
                     [
                         dbc.Col(
-                            html.H4(
+                            html.H3(
                                 "Select a date range to get the stats of that specific time-period",
                                 className="text-center",
                             ),
@@ -70,7 +70,7 @@ layout = html.Div(
                 dbc.Row(
                     [
                         dbc.Col(
-                            html.H5(
+                            html.H6(
                                 "(for individual developer stats and comparison between 2 developers)",
                                 className="text-center",
                             ),
@@ -128,8 +128,8 @@ layout = html.Div(
                 dbc.Row(
                     [
                         dbc.Col(
-                            html.H4(
-                                "Select a developer to see the stats",
+                            html.H3(
+                                "Plot of Developer-wise Analytics in the selected Date Range",
                                 className="text-center",
                             ),
                             className="mb-5",
@@ -247,8 +247,8 @@ layout = html.Div(
                 dbc.Row(
                     [
                         dbc.Col(
-                            html.H4(
-                                "Comparison between 2 Developers!",
+                            html.H3(
+                                "Comparison between 2 Developers in the selected Date Range",
                                 className="text-center",
                             ),
                             className="mb-5",
@@ -261,7 +261,7 @@ layout = html.Div(
                         dbc.Col(
                             dcc.Dropdown(
                                 devEmailList,
-                                placeholder="Type Sprinklr Email ID of Developer...",
+                                placeholder="Type Sprinklr Email ID of Developer 1...",
                                 clearable=False,
                                 id="devMail-dropdown-1",
                             )
@@ -269,7 +269,7 @@ layout = html.Div(
                         dbc.Col(
                             dcc.Dropdown(
                                 devEmailList,
-                                placeholder="Type Sprinklr Email ID of Developer...",
+                                placeholder="Type Sprinklr Email ID of Developer 2...",
                                 clearable=False,
                                 id="devMail-dropdown-2",
                             )
