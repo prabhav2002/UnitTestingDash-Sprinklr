@@ -78,17 +78,33 @@ def teampage_row3(timePeriod, teamNamesMultiDropdown, testCaseType, startdate, e
     elif testCaseType == "Test Cases Deleted":
         caseTypeString = "testDeleted"
 
+    # converting startdate, enddate to timestamp
+    start_date_object = date.fromisoformat(startdate)
+    end_date_object = date.fromisoformat(enddate)
+
     data = []
     # query to get count selected testcase type date-wise aggregated for selected teams
     for i in teamNamesMultiDropdown:
         query_filter = {
             "size": 0,
             "query": {
-                "term": {
-                    "cloudName.keyword": {
-                        "value": i,
-                    }
-                },
+                "bool": {
+                    "must": [
+                        {"match": {"cloudName.keyword": i}},
+                    ],
+                    # filter to get the results of selected date range only
+                    "filter": [
+                        {
+                            "range": {
+                                "fromTime": {
+                                    "time_zone": "+05:30",
+                                    "gte": start_date_object,
+                                    "lte": end_date_object,
+                                }
+                            }
+                        }
+                    ],
+                }
             },
             "aggs": {
                 "date": {
@@ -113,15 +129,6 @@ def teampage_row3(timePeriod, teamNamesMultiDropdown, testCaseType, startdate, e
     # creating dataframe
     df = pd.DataFrame(data, columns=["Date", "TestCaseCount", "Team"])
 
-    # filtering dataframe as per the date range chosen for analytics
-    start_date_object = date.fromisoformat(startdate)
-    start_date_string = start_date_object.strftime("%Y-%m-%d")
-    end_date_object = date.fromisoformat(enddate)
-    end_date_string = end_date_object.strftime("%Y-%m-%d")
-
-    df = df[(df["Date"] >= start_date_string) & (df["Date"] <= end_date_string)]
-    start_date_plus_month = start_date_object + relativedelta(months=1)
-
     # aggregated date-wise and plotting of data
     if timePeriod == "Date-wise Aggregation":
         fig = px.bar(
@@ -134,6 +141,7 @@ def teampage_row3(timePeriod, teamNamesMultiDropdown, testCaseType, startdate, e
             width=1100,
         )
         # range slider option
+        start_date_plus_month = start_date_object + relativedelta(months=1)
         fig.update_xaxes(
             rangeslider_visible=True,
             range=[start_date_object, min(start_date_plus_month, end_date_object)],
@@ -150,7 +158,7 @@ def teampage_row3(timePeriod, teamNamesMultiDropdown, testCaseType, startdate, e
         fig.update_yaxes(title=testCaseType)
         return fig
 
-    # aggregated week-wse and plotting of data
+    # aggregated week-wise and plotting of data
     elif timePeriod == "Week-wise Aggregation":
         dfWeek = df.copy()
         dfWeek = (
@@ -203,7 +211,8 @@ def teampage_row3(timePeriod, teamNamesMultiDropdown, testCaseType, startdate, e
         return fig
 
 
-def teampage_row4(team, testCaseType):
+# plot the stats of developers of the selected team in selected date range
+def teampage_row4(team, testCaseType, startdate, enddate):
     # setting testcase-type
     if testCaseType == "Effective Test Cases":
         caseTypeString = "effectiveCount"
@@ -212,15 +221,31 @@ def teampage_row4(team, testCaseType):
     elif testCaseType == "Test Cases Deleted":
         caseTypeString = "testDeleted"
 
+    # converting startdate, enddate to timestamp
+    start_date_object = date.fromisoformat(startdate)
+    end_date_object = date.fromisoformat(enddate)
+
     data = []
     # query to get count of given testcase type developer wise for selected team
     query_filter = {
         "size": 0,
         "query": {
-            "term": {
-                "cloudName.keyword": {
-                    "value": team,
-                }
+            "bool": {
+                "must": [
+                    {"match": {"cloudName.keyword": team}},
+                ],
+                # filter to get the results of selected date range only
+                "filter": [
+                    {
+                        "range": {
+                            "fromTime": {
+                                "time_zone": "+05:30",
+                                "gte": start_date_object,
+                                "lte": end_date_object,
+                            }
+                        }
+                    }
+                ],
             }
         },
         # aggregation to find count of selected type of test cases of every developer of the team
@@ -243,6 +268,7 @@ def teampage_row4(team, testCaseType):
     df = pd.DataFrame(data, columns=["Email", "Test Case Count"])
     df = df.sort_values("Email")
 
+    # plot
     fig = px.bar(
         df,
         x="Email",

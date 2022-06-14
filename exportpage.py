@@ -9,11 +9,15 @@ es = Elasticsearch()
 
 # function to JSONfied dataframe of overall analytics for the  given DateRange
 def exportpage_row1(timePeriod, startdate, enddate):
+
+    # converting startdate, enddate to timestamp
     start_date_object = date.fromisoformat(startdate)
     end_date_object = date.fromisoformat(enddate)
+
     query_filter = {
         "size": 0,
         "query": {
+            # filter to get the results of selected date range only
             "range": {
                 "fromTime": {
                     "time_zone": "+05:30",
@@ -84,13 +88,30 @@ def exportpage_row1(timePeriod, startdate, enddate):
 
 # function to JSONfied dataframe of developer-wise analytics for the  given DateRange
 def exportpage_row2(givenEmailID, timePeriod, startdate, enddate):
+
+    # converting startdate, enddate to timestamp
+    start_date_object = date.fromisoformat(startdate)
+    end_date_object = date.fromisoformat(enddate)
+
     query_filter = {
         "size": 0,
         "query": {
-            "term": {
-                "email.keyword": {
-                    "value": givenEmailID,
-                }
+            "bool": {
+                "must": [
+                    {"match": {"email.keyword": givenEmailID}},
+                ],
+                # filter to get the results of selected date range only
+                "filter": [
+                    {
+                        "range": {
+                            "fromTime": {
+                                "time_zone": "+05:30",
+                                "gte": start_date_object,
+                                "lte": end_date_object,
+                            }
+                        }
+                    }
+                ],
             }
         },
         "aggs": {
@@ -121,13 +142,6 @@ def exportpage_row2(givenEmailID, timePeriod, startdate, enddate):
     df = pd.DataFrame(
         data, columns=["Date", "Test Added", "Test Deleted", "Effective Test Cases"]
     )
-
-    start_date_object = date.fromisoformat(startdate)
-    start_date_string = start_date_object.strftime("%Y-%m-%d")
-    end_date_object = date.fromisoformat(enddate)
-    end_date_string = end_date_object.strftime("%Y-%m-%d")
-
-    df = df[(df["Date"] >= start_date_string) & (df["Date"] <= end_date_string)]
 
     if timePeriod == "Date-wise Aggregation":
         return df.to_json(orient="split")
@@ -161,13 +175,30 @@ def exportpage_row2(givenEmailID, timePeriod, startdate, enddate):
 
 # function to JSONfied dataframe of team-wise analytics for the  given DateRange
 def exportpage_row3(givenTeam, timePeriod, startdate, enddate):
+
+    # converting startdate, enddate to timestamp
+    start_date_object = date.fromisoformat(startdate)
+    end_date_object = date.fromisoformat(enddate)
+
     query_filter = {
         "size": 0,
         "query": {
-            "term": {
-                "cloudName.keyword": {
-                    "value": givenTeam,
-                }
+            "bool": {
+                "must": [
+                    {"match": {"cloudName.keyword": givenTeam}},
+                ],
+                # filter to get the results of selected date range only
+                "filter": [
+                    {
+                        "range": {
+                            "fromTime": {
+                                "time_zone": "+05:30",
+                                "gte": start_date_object,
+                                "lte": end_date_object,
+                            }
+                        }
+                    }
+                ],
             }
         },
         "aggs": {
@@ -198,13 +229,6 @@ def exportpage_row3(givenTeam, timePeriod, startdate, enddate):
     df = pd.DataFrame(
         data, columns=["Date", "Test Added", "Test Deleted", "Effective Test Cases"]
     )
-
-    start_date_object = date.fromisoformat(startdate)
-    start_date_string = start_date_object.strftime("%Y-%m-%d")
-    end_date_object = date.fromisoformat(enddate)
-    end_date_string = end_date_object.strftime("%Y-%m-%d")
-
-    df = df[(df["Date"] >= start_date_string) & (df["Date"] <= end_date_string)]
 
     if timePeriod == "Date-wise Aggregation":
         return df.to_json(orient="split")
@@ -237,14 +261,31 @@ def exportpage_row3(givenTeam, timePeriod, startdate, enddate):
 
 
 # function to JSONfied dataframe of developer-wise test cases count for selected team
-def exportpage_row4(givenTeam):
+def exportpage_row4(givenTeam, startdate, enddate):
+
+    # converting startdate, enddate to timestamp
+    start_date_object = date.fromisoformat(startdate)
+    end_date_object = date.fromisoformat(enddate)
+
     query_filter = {
         "size": 0,
         "query": {
-            "term": {
-                "cloudName.keyword": {
-                    "value": givenTeam,
-                }
+            "bool": {
+                "must": [
+                    {"match": {"cloudName.keyword": givenTeam}},
+                ],
+                # filter to get the results of selected date range only
+                "filter": [
+                    {
+                        "range": {
+                            "fromTime": {
+                                "time_zone": "+05:30",
+                                "gte": start_date_object,
+                                "lte": end_date_object,
+                            }
+                        }
+                    }
+                ],
             }
         },
         "aggs": {

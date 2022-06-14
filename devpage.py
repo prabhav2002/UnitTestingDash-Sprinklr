@@ -33,89 +33,51 @@ def devpage_row2(givenEmailID, startdate, enddate):
     if givenEmailID == None:
         return "Enter the Sprinklr Mail ID above to see the team...", 0, 0, 0
     else:
+
+        # converting startdate, enddate to timestamp
+        start_date_object = date.fromisoformat(startdate)
+        end_date_object = date.fromisoformat(enddate)
+
         # query to get date-wise aggregated count for testcases added, deleted, effective for selected developer
         query = {
             "size": 0,
             "query": {
-                "term": {
-                    "email.keyword": {
-                        "value": givenEmailID,
-                    }
+                "bool": {
+                    "must": [
+                        {"match": {"email.keyword": givenEmailID}},
+                    ],
+                    # filter to get the results of selected date range only
+                    "filter": [
+                        {
+                            "range": {
+                                "fromTime": {
+                                    "time_zone": "+05:30",
+                                    "gte": start_date_object,
+                                    "lte": end_date_object,
+                                }
+                            }
+                        }
+                    ],
                 }
             },
             "aggs": {
-                "date": {
-                    "date_histogram": {
-                        "field": "fromTime",
-                        "interval": "day",
-                        "format": "yyyy-MM-dd",
-                    },
-                    "aggs": {
-                        "DevwiseEffective": {"sum": {"field": "effectiveCount"}},
-                        "DevwiseAdded": {"sum": {"field": "testAdded"}},
-                        "DevwiseDeleted": {"sum": {"field": "testDeleted"}},
-                    },
-                }
+                "DevwiseEffective": {"sum": {"field": "effectiveCount"}},
+                "DevwiseAdded": {"sum": {"field": "testAdded"}},
+                "DevwiseDeleted": {"sum": {"field": "testDeleted"}},
+                "Teams": {"terms": {"field": "cloudName.keyword"}},
             },
         }
+
         res = es.search(index="unit_test_tracker", body=query)
-        data = []
 
-        for i in res["aggregations"]["date"]["buckets"]:
-            test_case_added = i["DevwiseAdded"]["value"]
-            test_case_deleted = i["DevwiseDeleted"]["value"]
-            effective_count = i["DevwiseEffective"]["value"]
-            # converting timezone to Asia/Kolkata
-            timestamp = i["key"] + 66600000
-            date_time = dt.fromtimestamp(int(timestamp) / 1000)
-            data.append(
-                [date_time, effective_count, test_case_added, test_case_deleted]
-            )
+        # taking effectiveTestCases, testCasesAdded and testCasesDeleted from the result
+        effectiveTestCases = res["aggregations"]["DevwiseEffective"]["value"]
+        testCasesAdded = res["aggregations"]["DevwiseAdded"]["value"]
+        testCasesDeleted = res["aggregations"]["DevwiseDeleted"]["value"]
 
-        # creating dataframe
-        df = pd.DataFrame(
-            data,
-            columns=[
-                "Date",
-                "Effective Test Cases",
-                "Test Cases Added",
-                "Test Cases Deleted",
-            ],
-        )
-
-        # filtering dataframe as per the date range chosen for analytics
-        start_date_object = date.fromisoformat(startdate)
-        start_date_string = start_date_object.strftime("%Y-%m-%d")
-        end_date_object = date.fromisoformat(enddate)
-        end_date_string = end_date_object.strftime("%Y-%m-%d")
-        df = df[(df["Date"] >= start_date_string) & (df["Date"] <= end_date_string)]
-
-        effectiveTestCases = df["Effective Test Cases"].sum()
-        testCasesAdded = df["Test Cases Added"].sum()
-        testCasesDeleted = df["Test Cases Deleted"].sum()
-
-        # filter to get team-name of selected developer
-        filter = {
-            "size": 0,
-            "query": {
-                "term": {
-                    "email.keyword": {
-                        "value": givenEmailID,
-                    }
-                }
-            },
-            "aggs": {
-                "team": {
-                    "terms": {
-                        "field": "cloudName.keyword",
-                    }
-                }
-            },
-        }
-        result = es.search(index="unit_test_tracker", body=filter)
+        # taking teamNameSet from the result
         teamNameSet = set()
-
-        for i in result["aggregations"]["team"]["buckets"]:
+        for i in res["aggregations"]["Teams"]["buckets"]:
             teamName = i["key"]
             teamNameSet.add(teamName)
 
@@ -137,14 +99,30 @@ def devpage_row3(timePeriod, testCaseType, givenEmailID, startdate, enddate):
         elif testCaseType == "Test Cases Deleted":
             caseTypeString = "testDeleted"
 
+        # converting startdate, enddate to timestamp
+        start_date_object = date.fromisoformat(startdate)
+        end_date_object = date.fromisoformat(enddate)
+
         # query to get count selected testcase type date-wise aggregated for selected developer
         query_filter = {
             "size": 0,
             "query": {
-                "term": {
-                    "email.keyword": {
-                        "value": givenEmailID,
-                    }
+                "bool": {
+                    "must": [
+                        {"match": {"email.keyword": givenEmailID}},
+                    ],
+                    # filter to get the results of selected date range only
+                    "filter": [
+                        {
+                            "range": {
+                                "fromTime": {
+                                    "time_zone": "+05:30",
+                                    "gte": start_date_object,
+                                    "lte": end_date_object,
+                                }
+                            }
+                        }
+                    ],
                 }
             },
             "aggs": {
@@ -170,14 +148,6 @@ def devpage_row3(timePeriod, testCaseType, givenEmailID, startdate, enddate):
         # creating dataframe
         df = pd.DataFrame(data, columns=["Date", "TestCaseCount"])
 
-        # filtering dataframe as per the date range chosen for analytics
-        start_date_object = date.fromisoformat(startdate)
-        start_date_string = start_date_object.strftime("%Y-%m-%d")
-        end_date_object = date.fromisoformat(enddate)
-        end_date_string = end_date_object.strftime("%Y-%m-%d")
-        start_date_plus_fourmonths = start_date_object + relativedelta(months=4)
-        df = df[(df["Date"] >= start_date_string) & (df["Date"] <= end_date_string)]
-
         # aggregated date-wise and plotting of data
         if timePeriod == "Date-wise Aggregation":
             fig = px.bar(
@@ -188,6 +158,7 @@ def devpage_row3(timePeriod, testCaseType, givenEmailID, startdate, enddate):
                 height=900,
                 width=1100,
             )
+            start_date_plus_fourmonths = start_date_object + relativedelta(months=4)
             fig.update_xaxes(
                 rangeslider_visible=True,
                 range=[
@@ -278,14 +249,30 @@ def devpage_row4(givenEmailID1, givenEmailID2, testCaseType, startdate, enddate)
         elif testCaseType == "Test Cases Deleted":
             caseTypeString = "testDeleted"
 
+        # converting startdate, enddate to timestamp
+        start_date_object = date.fromisoformat(startdate)
+        end_date_object = date.fromisoformat(enddate)
+
         # query to get count of given testcase type aggregated date-wise for first selected developer
         query_filter = {
             "size": 0,
             "query": {
-                "term": {
-                    "email.keyword": {
-                        "value": givenEmailID1,
-                    }
+                "bool": {
+                    "must": [
+                        {"match": {"email.keyword": givenEmailID1}},
+                    ],
+                    # filter to get the results of selected date range only
+                    "filter": [
+                        {
+                            "range": {
+                                "fromTime": {
+                                    "time_zone": "+05:30",
+                                    "gte": start_date_object,
+                                    "lte": end_date_object,
+                                }
+                            }
+                        }
+                    ],
                 }
             },
             "aggs": {
@@ -312,10 +299,21 @@ def devpage_row4(givenEmailID1, givenEmailID2, testCaseType, startdate, enddate)
         query_filter = {
             "size": 0,
             "query": {
-                "term": {
-                    "email.keyword": {
-                        "value": givenEmailID2,
-                    }
+                "bool": {
+                    "must": [
+                        {"match": {"email.keyword": givenEmailID2}},
+                    ],
+                    "filter": [
+                        {
+                            "range": {
+                                "fromTime": {
+                                    "time_zone": "+05:30",
+                                    "gte": start_date_object,
+                                    "lte": end_date_object,
+                                }
+                            }
+                        }
+                    ],
                 }
             },
             "aggs": {
@@ -342,15 +340,7 @@ def devpage_row4(givenEmailID1, givenEmailID2, testCaseType, startdate, enddate)
         df1 = pd.DataFrame(data1, columns=["Date", testCaseType])
         df2 = pd.DataFrame(data2, columns=["Date", testCaseType])
 
-        # filtering dataframe as per the date range chosen for analytics
-        start_date_object = date.fromisoformat(startdate)
-        start_date_string = start_date_object.strftime("%Y-%m-%d")
-        end_date_object = date.fromisoformat(enddate)
-        end_date_string = end_date_object.strftime("%Y-%m-%d")
         start_date_plus_twomonths = start_date_object + relativedelta(months=2)
-
-        df1 = df1[(df1["Date"] >= start_date_string) & (df1["Date"] <= end_date_string)]
-        df2 = df2[(df2["Date"] >= start_date_string) & (df2["Date"] <= end_date_string)]
 
         plot = go.Figure(
             data=[
