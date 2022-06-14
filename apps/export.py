@@ -295,6 +295,28 @@ layout = html.Div(
                 dbc.Row(
                     [
                         dbc.Col(
+                            html.H2(
+                                "Developer-wise Analytics of the selected Team",
+                                className="text-center",
+                            ),
+                            className="mb-4",
+                        )
+                    ]
+                ),
+                dbc.Row(
+                    [
+                        dbc.Col(
+                            html.H5(
+                                "Select a team to see the stats",
+                                className="text-center",
+                            ),
+                            className="mb-4",
+                        )
+                    ]
+                ),
+                dbc.Row(
+                    [
+                        dbc.Col(
                             dcc.Dropdown(
                                 teamList,
                                 placeholder="Type Team Name...",
@@ -312,7 +334,7 @@ layout = html.Div(
                             dbc.Card(
                                 children=[
                                     html.H4(
-                                        children="Developer-wise Stats of the selected Team",
+                                        children="Developer-wise Analytics of the selected Team as per the above filter",
                                         className="text-center",
                                     ),
                                     dbc.Button(
