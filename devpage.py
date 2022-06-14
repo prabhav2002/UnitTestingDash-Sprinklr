@@ -6,7 +6,6 @@ import plotly.express as px
 import plotly.graph_objects as go
 from datetime import date
 from dateutil.relativedelta import relativedelta
-from homepage import homepage_row0
 
 # connecting with elasticsearch server
 es = Elasticsearch()
