@@ -46,7 +46,7 @@ layout = html.Div(
                     [
                         dbc.Col(
                             html.H3(
-                                "Select a date range to get the stats of that specific time-period",
+                                "Select a date range to get the stats in that date range for all the exports given below",
                                 className="text-center",
                             ),
                             className="mb-5 mt-5",
@@ -295,31 +295,6 @@ layout = html.Div(
                 dbc.Row(
                     [
                         dbc.Col(
-                            html.H2(
-                                "Select a team to see the stats of its developers",
-                                className="text-center",
-                            ),
-                            className="mb-4",
-                        )
-                    ]
-                ),
-                dbc.Row(
-                    [
-                        dbc.Col(
-                            html.H5(
-                                children="DateRange of below Stats, From: "
-                                + str(min_date)[0:10]
-                                + " To: "
-                                + str(max_date)[0:10],
-                                className="text-center",
-                            ),
-                            className="mb-5",
-                        )
-                    ]
-                ),
-                dbc.Row(
-                    [
-                        dbc.Col(
                             dcc.Dropdown(
                                 teamList,
                                 placeholder="Type Team Name...",
@@ -337,7 +312,7 @@ layout = html.Div(
                             dbc.Card(
                                 children=[
                                     html.H4(
-                                        children="Team-wise Developer Analytics as per the above filter",
+                                        children="Developer-wise Stats of the selected Team",
                                         className="text-center",
                                     ),
                                     dbc.Button(
