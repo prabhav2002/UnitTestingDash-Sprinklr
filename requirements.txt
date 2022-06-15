@@ -1,0 +1,7 @@
+dash==2.4.1
+dash_bootstrap_components==0.13.1
+elasticsearch==5.4.0
+pandas==1.4.2
+plotly==5.8.0
+python_dateutil==2.8.2
+elasticsearch==5.4.0
