@@ -3,7 +3,7 @@ from dash import html, dcc
 from dash.dependencies import Input, Output
 import dash_bootstrap_components as dbc
 from app import app
-from apps import team, dev, home, export
+from apps import team, dev, home, export, leader
 
 # the style arguments for the sidebar
 SIDEBAR_STYLE = {
@@ -40,6 +40,7 @@ sidebar = html.Div(
                 dbc.NavLink("Home", href="/", active="exact"),
                 dbc.NavLink("Developer-wise", href="/dev", active="exact"),
                 dbc.NavLink("Team-wise", href="/team", active="exact"),
+                dbc.NavLink("Leaderboad", href="/leader", active="exact"),
                 dbc.NavLink("Exports", href="/export", active="exact"),
             ],
             vertical=True,
@@ -76,6 +77,8 @@ def render_page_content(pathname):
         return dev.layout
     elif pathname == "/team":
         return team.layout
+    elif pathname == "/leader":
+        return leader.layout
     elif pathname == "/export":
         return export.layout
     # If the user tries to reach a different page, return a 404 message
@@ -87,6 +90,6 @@ def render_page_content(pathname):
         ]
     )
 
-#running server
+
 if __name__ == "__main__":
     app.run_server(debug=True)
