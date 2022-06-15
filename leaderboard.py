@@ -1,10 +1,10 @@
 # importing libraries
-from elasticsearch import Elasticsearch
+from elasticServerDashApp import elasitcServerDashApp
 from datetime import date
 import pandas as pd
 
 # connecting with elasticsearch server
-es = Elasticsearch()
+es = elasitcServerDashApp()
 
 # create the leaderboard for the developers of the selected teams
 def leaderboard_row1(teamNamesMultiDropdown, startdate, enddate):

@@ -1,5 +1,5 @@
 # importing libraries
-from elasticsearch import Elasticsearch
+from elasticServerDashApp import elasitcServerDashApp
 from datetime import datetime as dt
 import pandas as pd
 import plotly.express as px
@@ -8,7 +8,7 @@ from datetime import date
 from dateutil.relativedelta import relativedelta
 
 # connecting with elasticsearch server
-es = Elasticsearch()
+es = elasitcServerDashApp()
 
 # function get list of all developers in the provided data
 def devpage_row1():

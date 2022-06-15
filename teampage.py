@@ -1,5 +1,5 @@
 # importing libraries
-from elasticsearch import Elasticsearch
+from elasticServerDashApp import elasitcServerDashApp
 from datetime import datetime as dt
 from datetime import date
 import pandas as pd
@@ -7,7 +7,7 @@ import plotly.express as px
 from dateutil.relativedelta import relativedelta
 
 # connecting with elasticsearch server
-es = Elasticsearch()
+es = elasitcServerDashApp()
 
 # function get total numbers of team and name of those teams
 def teampage_row1():

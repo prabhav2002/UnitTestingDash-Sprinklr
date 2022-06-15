@@ -1,11 +1,11 @@
 # importing libraries
-from elasticsearch import Elasticsearch
+from elasticServerDashApp import elasitcServerDashApp
 from datetime import datetime as dt
 from datetime import date
 import pandas as pd
 
 # connecting with elasticsearch server
-es = Elasticsearch()
+es = elasitcServerDashApp()
 
 # function to JSONfied dataframe of overall analytics for the  given DateRange
 def exportpage_row1(timePeriod, startdate, enddate):
