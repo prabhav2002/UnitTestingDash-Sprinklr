@@ -16,351 +16,357 @@ from teampage import teampage_row1
 from homepage import homepage_row0
 from app import app
 
-# getting minimum and maximum date in provided data using homepage function
-min_date, max_date = homepage_row0()
-min_datem = dt.strptime(str(min_date), "%Y-%m-%d %H:%M:%S")
-max_datem = dt.strptime(str(max_date), "%Y-%m-%d %H:%M:%S")
-
-# getting list of all developers from the provided data
-devEmailList = devpage_row1()
-# getting list of all teams from the provided data
-totalTeams, teamList = teampage_row1()
-
 # layout of exports page
-layout = html.Div(
-    [
-        dbc.Container(
-            [
-                dbc.Row(
-                    [
-                        dbc.Col(
-                            html.H1(
-                                "Download the filtered data as Excel!",
-                                className="text-center",
+def export_layout():
+    # getting minimum and maximum date in provided data using homepage function
+    min_date, max_date = homepage_row0()
+    min_datem = dt.strptime(str(min_date), "%Y-%m-%d %H:%M:%S")
+    max_datem = dt.strptime(str(max_date), "%Y-%m-%d %H:%M:%S")
+
+    # getting list of all developers from the provided data
+    devEmailList = devpage_row1()
+    # getting list of all teams from the provided data
+    totalTeams, teamList = teampage_row1()
+
+    # layout of exports page
+    return html.Div(
+        [
+            dbc.Container(
+                [
+                    dbc.Row(
+                        [
+                            dbc.Col(
+                                html.H1(
+                                    "Download the filtered data as Excel!",
+                                    className="text-center",
+                                ),
+                                className="mb-5 mt-5",
+                            )
+                        ]
+                    ),
+                    dbc.Row(
+                        [
+                            dbc.Col(
+                                html.H3(
+                                    "Select a date range to get the stats in that date range for all the exports given below",
+                                    className="text-center",
+                                ),
+                                className="mb-5 mt-5",
+                            )
+                        ]
+                    ),
+                    dbc.Row(
+                        [
+                            dbc.Col(dbc.Card(), className="mb-4"),
+                            dbc.Col(
+                                dbc.Card(
+                                    children=[
+                                        dcc.DatePickerRange(
+                                            id="exp-date-picker-range",
+                                            min_date_allowed=date(
+                                                min_datem.year,
+                                                min_datem.month,
+                                                min_datem.day,
+                                            ),
+                                            max_date_allowed=date(
+                                                max_datem.year,
+                                                max_datem.month,
+                                                max_datem.day,
+                                            ),
+                                            display_format="DD-MM-YYYY",
+                                            initial_visible_month=date(
+                                                min_datem.year,
+                                                min_datem.month,
+                                                min_datem.day,
+                                            ),
+                                            start_date=date(
+                                                min_datem.year,
+                                                min_datem.month,
+                                                min_datem.day,
+                                            ),
+                                            end_date=date(
+                                                max_datem.year,
+                                                max_datem.month,
+                                                max_datem.day,
+                                            ),
+                                        )
+                                    ],
+                                    body=True,
+                                    color="primary",
+                                    outline=False,
+                                ),
+                                className="mb-4",
                             ),
-                            className="mb-5 mt-5",
-                        )
-                    ]
-                ),
-                dbc.Row(
-                    [
-                        dbc.Col(
-                            html.H3(
-                                "Select a date range to get the stats in that date range for all the exports given below",
-                                className="text-center",
-                            ),
-                            className="mb-5 mt-5",
-                        )
-                    ]
-                ),
-                dbc.Row(
-                    [
-                        dbc.Col(dbc.Card(), className="mb-4"),
-                        dbc.Col(
-                            dbc.Card(
-                                children=[
-                                    dcc.DatePickerRange(
-                                        id="exp-date-picker-range",
-                                        min_date_allowed=date(
-                                            min_datem.year,
-                                            min_datem.month,
-                                            min_datem.day,
-                                        ),
-                                        max_date_allowed=date(
-                                            max_datem.year,
-                                            max_datem.month,
-                                            max_datem.day,
-                                        ),
-                                        display_format="DD-MM-YYYY",
-                                        initial_visible_month=date(
-                                            min_datem.year,
-                                            min_datem.month,
-                                            min_datem.day,
-                                        ),
-                                        start_date=date(
-                                            min_datem.year,
-                                            min_datem.month,
-                                            min_datem.day,
-                                        ),
-                                        end_date=date(
-                                            max_datem.year,
-                                            max_datem.month,
-                                            max_datem.day,
-                                        ),
-                                    )
-                                ],
-                                body=True,
-                                color="primary",
-                                outline=False,
-                            ),
-                            className="mb-4",
-                        ),
-                        dbc.Col(dbc.Card(), className="mb-4"),
-                    ],
-                    className="mb-5",
-                ),
-                dbc.Row(
-                    [
-                        dbc.Col(
-                            html.H2(
-                                children="Overall Analytics", className="text-center"
-                            ),
-                            className="mb-4",
-                        )
-                    ]
-                ),
-                dcc.Dropdown(
-                    [
+                            dbc.Col(dbc.Card(), className="mb-4"),
+                        ],
+                        className="mb-5",
+                    ),
+                    dbc.Row(
+                        [
+                            dbc.Col(
+                                html.H2(
+                                    children="Overall Analytics",
+                                    className="text-center",
+                                ),
+                                className="mb-4",
+                            )
+                        ]
+                    ),
+                    dcc.Dropdown(
+                        [
+                            "Date-wise Aggregation",
+                            "Week-wise Aggregation",
+                            "Month-wise Aggregation",
+                        ],
                         "Date-wise Aggregation",
-                        "Week-wise Aggregation",
-                        "Month-wise Aggregation",
-                    ],
-                    "Date-wise Aggregation",
-                    clearable=False,
-                    id="timePeriod-dropdown-exportpage1",
-                ),
-                dcc.Store(id="overall_analytics_df"),
-                dbc.Row([]),
-                dbc.Row(
-                    [
-                        dbc.Col(
-                            dbc.Card(
-                                children=[
-                                    html.H4(
-                                        children="Overall Analytics as per the above filter",
-                                        className="text-center",
-                                    ),
-                                    dbc.Button(
-                                        "Download as Excel",
-                                        id="overall_button_xlsx",
-                                        color="primary",
-                                        className="mt-3",
-                                    ),
-                                ],
-                                body=True,
-                                color="dark",
-                                outline=True,
+                        clearable=False,
+                        id="timePeriod-dropdown-exportpage1",
+                    ),
+                    dcc.Store(id="overall_analytics_df"),
+                    dbc.Row([]),
+                    dbc.Row(
+                        [
+                            dbc.Col(
+                                dbc.Card(
+                                    children=[
+                                        html.H4(
+                                            children="Overall Analytics as per the above filter",
+                                            className="text-center",
+                                        ),
+                                        dbc.Button(
+                                            "Download as Excel",
+                                            id="overall_button_xlsx",
+                                            color="primary",
+                                            className="mt-3",
+                                        ),
+                                    ],
+                                    body=True,
+                                    color="dark",
+                                    outline=True,
+                                ),
+                                className="mb-4 mt-4",
                             ),
-                            className="mb-4 mt-4",
-                        ),
-                    ]
-                ),
-                dcc.Download(id="overall_analytics_download_xlsx"),
-                dbc.Row(
-                    [
-                        dbc.Col(
-                            html.H2(
-                                "Developer-wise Unit-Testing Analytics",
-                                className="text-center",
-                            ),
-                            className="mb-4",
-                        )
-                    ]
-                ),
-                dbc.Row(
-                    [
-                        dbc.Col(
-                            html.H5(
-                                "Select a developer to see the stats",
-                                className="text-center",
-                            ),
-                            className="mb-4",
-                        )
-                    ]
-                ),
-                dbc.Row(
-                    [
-                        dbc.Col(
-                            dcc.Dropdown(
-                                devEmailList,
-                                placeholder="Type Sprinklr Email ID of Developer...",
-                                clearable=False,
-                                id="devMail-dropdown-exportpage",
+                        ]
+                    ),
+                    dcc.Download(id="overall_analytics_download_xlsx"),
+                    dbc.Row(
+                        [
+                            dbc.Col(
+                                html.H2(
+                                    "Developer-wise Unit-Testing Analytics",
+                                    className="text-center",
+                                ),
+                                className="mb-4",
                             )
-                        ),
-                        dbc.Col(
-                            dcc.Dropdown(
-                                [
+                        ]
+                    ),
+                    dbc.Row(
+                        [
+                            dbc.Col(
+                                html.H5(
+                                    "Select a developer to see the stats",
+                                    className="text-center",
+                                ),
+                                className="mb-4",
+                            )
+                        ]
+                    ),
+                    dbc.Row(
+                        [
+                            dbc.Col(
+                                dcc.Dropdown(
+                                    devEmailList,
+                                    placeholder="Type Sprinklr Email ID of Developer...",
+                                    clearable=False,
+                                    id="devMail-dropdown-exportpage",
+                                )
+                            ),
+                            dbc.Col(
+                                dcc.Dropdown(
+                                    [
+                                        "Date-wise Aggregation",
+                                        "Week-wise Aggregation",
+                                        "Month-wise Aggregation",
+                                    ],
                                     "Date-wise Aggregation",
-                                    "Week-wise Aggregation",
-                                    "Month-wise Aggregation",
-                                ],
-                                "Date-wise Aggregation",
-                                clearable=False,
-                                id="timePeriod-dropdown-devexportpage",
+                                    clearable=False,
+                                    id="timePeriod-dropdown-devexportpage",
+                                )
+                            ),
+                        ],
+                        className="mb-5",
+                    ),
+                    dcc.Store(id="dev_analytics_df"),
+                    dbc.Row(
+                        [
+                            dbc.Col(
+                                dbc.Card(
+                                    children=[
+                                        html.H4(
+                                            children="Developer-wise Analytics as per the above filter",
+                                            className="text-center",
+                                        ),
+                                        dbc.Button(
+                                            "Download as Excel",
+                                            id="dev_button_xlsx",
+                                            color="primary",
+                                            className="mt-3",
+                                        ),
+                                    ],
+                                    body=True,
+                                    color="dark",
+                                    outline=True,
+                                ),
+                                className="mb-4",
+                            ),
+                        ]
+                    ),
+                    dcc.Download(id="dev_analytics_download_xlsx"),
+                    dbc.Row(
+                        [
+                            dbc.Col(
+                                html.H2(
+                                    "Team-wise Unit-Testing Analytics",
+                                    className="text-center",
+                                ),
+                                className="mb-4",
                             )
-                        ),
-                    ],
-                    className="mb-5",
-                ),
-                dcc.Store(id="dev_analytics_df"),
-                dbc.Row(
-                    [
-                        dbc.Col(
-                            dbc.Card(
-                                children=[
-                                    html.H4(
-                                        children="Developer-wise Analytics as per the above filter",
-                                        className="text-center",
-                                    ),
-                                    dbc.Button(
-                                        "Download as Excel",
-                                        id="dev_button_xlsx",
-                                        color="primary",
-                                        className="mt-3",
-                                    ),
-                                ],
-                                body=True,
-                                color="dark",
-                                outline=True,
-                            ),
-                            className="mb-4",
-                        ),
-                    ]
-                ),
-                dcc.Download(id="dev_analytics_download_xlsx"),
-                dbc.Row(
-                    [
-                        dbc.Col(
-                            html.H2(
-                                "Team-wise Unit-Testing Analytics",
-                                className="text-center",
-                            ),
-                            className="mb-4",
-                        )
-                    ]
-                ),
-                dbc.Row(
-                    [
-                        dbc.Col(
-                            html.H5(
-                                "Select a team to see the stats",
-                                className="text-center",
-                            ),
-                            className="mb-4",
-                        )
-                    ]
-                ),
-                dbc.Row(
-                    [
-                        dbc.Col(
-                            dcc.Dropdown(
-                                teamList,
-                                placeholder="Type Team Name...",
-                                clearable=False,
-                                id="team-dropdown-exportpage",
+                        ]
+                    ),
+                    dbc.Row(
+                        [
+                            dbc.Col(
+                                html.H5(
+                                    "Select a team to see the stats",
+                                    className="text-center",
+                                ),
+                                className="mb-4",
                             )
-                        ),
-                        dbc.Col(
-                            dcc.Dropdown(
-                                [
+                        ]
+                    ),
+                    dbc.Row(
+                        [
+                            dbc.Col(
+                                dcc.Dropdown(
+                                    teamList,
+                                    placeholder="Type Team Name...",
+                                    clearable=False,
+                                    id="team-dropdown-exportpage",
+                                )
+                            ),
+                            dbc.Col(
+                                dcc.Dropdown(
+                                    [
+                                        "Date-wise Aggregation",
+                                        "Week-wise Aggregation",
+                                        "Month-wise Aggregation",
+                                    ],
                                     "Date-wise Aggregation",
-                                    "Week-wise Aggregation",
-                                    "Month-wise Aggregation",
-                                ],
-                                "Date-wise Aggregation",
-                                clearable=False,
-                                id="timePeriod-dropdown-teamexportpage",
+                                    clearable=False,
+                                    id="timePeriod-dropdown-teamexportpage",
+                                )
+                            ),
+                        ],
+                        className="mb-5",
+                    ),
+                    dcc.Store(id="team_analytics_df"),
+                    dbc.Row(
+                        [
+                            dbc.Col(
+                                dbc.Card(
+                                    children=[
+                                        html.H4(
+                                            children="Team-wise Analytics as per the above filter",
+                                            className="text-center",
+                                        ),
+                                        dbc.Button(
+                                            "Download as Excel",
+                                            id="team_button_xlsx",
+                                            color="primary",
+                                            className="mt-3",
+                                        ),
+                                    ],
+                                    body=True,
+                                    color="dark",
+                                    outline=True,
+                                ),
+                                className="mb-4",
+                            ),
+                        ]
+                    ),
+                    dcc.Download(id="team_analytics_download_xlsx"),
+                    dbc.Row(
+                        [
+                            dbc.Col(
+                                html.H2(
+                                    "Developer-wise Analytics of the selected Team",
+                                    className="text-center",
+                                ),
+                                className="mb-4",
                             )
-                        ),
-                    ],
-                    className="mb-5",
-                ),
-                dcc.Store(id="team_analytics_df"),
-                dbc.Row(
-                    [
-                        dbc.Col(
-                            dbc.Card(
-                                children=[
-                                    html.H4(
-                                        children="Team-wise Analytics as per the above filter",
-                                        className="text-center",
-                                    ),
-                                    dbc.Button(
-                                        "Download as Excel",
-                                        id="team_button_xlsx",
-                                        color="primary",
-                                        className="mt-3",
-                                    ),
-                                ],
-                                body=True,
-                                color="dark",
-                                outline=True,
-                            ),
-                            className="mb-4",
-                        ),
-                    ]
-                ),
-                dcc.Download(id="team_analytics_download_xlsx"),
-                dbc.Row(
-                    [
-                        dbc.Col(
-                            html.H2(
-                                "Developer-wise Analytics of the selected Team",
-                                className="text-center",
-                            ),
-                            className="mb-4",
-                        )
-                    ]
-                ),
-                dbc.Row(
-                    [
-                        dbc.Col(
-                            html.H5(
-                                "Select a team to see the stats",
-                                className="text-center",
-                            ),
-                            className="mb-4",
-                        )
-                    ]
-                ),
-                dbc.Row(
-                    [
-                        dbc.Col(
-                            dcc.Dropdown(
-                                teamList,
-                                placeholder="Type Team Name...",
-                                clearable=False,
-                                id="teamdev-dropdown-exportpage",
+                        ]
+                    ),
+                    dbc.Row(
+                        [
+                            dbc.Col(
+                                html.H5(
+                                    "Select a team to see the stats",
+                                    className="text-center",
+                                ),
+                                className="mb-4",
                             )
-                        ),
-                    ],
-                    className="mb-5",
-                ),
-                dcc.Store(id="teamdev_analytics_df"),
-                dbc.Row(
-                    [
-                        dbc.Col(
-                            dbc.Card(
-                                children=[
-                                    html.H4(
-                                        children="Developer-wise Analytics of the selected Team as per the above filter",
-                                        className="text-center",
-                                    ),
-                                    dbc.Button(
-                                        "Download as Excel",
-                                        id="teamdev_button_xlsx",
-                                        color="primary",
-                                        className="mt-3",
-                                    ),
-                                ],
-                                body=True,
-                                color="dark",
-                                outline=True,
+                        ]
+                    ),
+                    dbc.Row(
+                        [
+                            dbc.Col(
+                                dcc.Dropdown(
+                                    teamList,
+                                    placeholder="Type Team Name...",
+                                    clearable=False,
+                                    id="teamdev-dropdown-exportpage",
+                                )
                             ),
-                            className="mb-4",
-                        ),
-                    ]
-                ),
-                dcc.Download(id="teamdev_analytics_download_xlsx"),
-                html.A(
-                    "Created by Prabhav Shah",
-                    href="https://www.linkedin.com/in/prabhav-shah-7723281a0",
-                ),
-            ]
-        )
-    ]
-)
+                        ],
+                        className="mb-5",
+                    ),
+                    dcc.Store(id="teamdev_analytics_df"),
+                    dbc.Row(
+                        [
+                            dbc.Col(
+                                dbc.Card(
+                                    children=[
+                                        html.H4(
+                                            children="Developer-wise Analytics of the selected Team as per the above filter",
+                                            className="text-center",
+                                        ),
+                                        dbc.Button(
+                                            "Download as Excel",
+                                            id="teamdev_button_xlsx",
+                                            color="primary",
+                                            className="mt-3",
+                                        ),
+                                    ],
+                                    body=True,
+                                    color="dark",
+                                    outline=True,
+                                ),
+                                className="mb-4",
+                            ),
+                        ]
+                    ),
+                    dcc.Download(id="teamdev_analytics_download_xlsx"),
+                    html.A(
+                        "Created by Prabhav Shah",
+                        href="https://www.linkedin.com/in/prabhav-shah-7723281a0",
+                    ),
+                ]
+            )
+        ]
+    )
+
+
+layout = export_layout()
 
 # callback to get JSONfied for overall analytics for the given DateRange
 @app.callback(

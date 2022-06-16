@@ -9,6 +9,7 @@ from dateutil.relativedelta import relativedelta
 # connecting with elasticsearch server
 es = elasitcServerDashApp()
 
+
 # function get total numbers of team and name of those teams
 def teampage_row1():
     # aggregation to get all the teams

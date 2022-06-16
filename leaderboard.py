@@ -1,7 +1,8 @@
 # importing libraries
 from elasticServerDashApp import elasitcServerDashApp
-from datetime import date
 import pandas as pd
+from datetime import date
+
 
 # connecting with elasticsearch server
 es = elasitcServerDashApp()

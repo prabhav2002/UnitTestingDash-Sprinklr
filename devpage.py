@@ -10,6 +10,7 @@ from dateutil.relativedelta import relativedelta
 # connecting with elasticsearch server
 es = elasitcServerDashApp()
 
+
 # function get list of all developers in the provided data
 def devpage_row1():
     # aggregation to get all developers
@@ -64,7 +65,6 @@ def devpage_row2(givenEmailID, startdate, enddate):
                 "DevwiseEffective": {"sum": {"field": "effectiveCount"}},
                 "DevwiseAdded": {"sum": {"field": "testAdded"}},
                 "DevwiseDeleted": {"sum": {"field": "testDeleted"}},
-                "Teams": {"terms": {"field": "cloudName.keyword"}},
             },
         }
 
@@ -75,13 +75,35 @@ def devpage_row2(givenEmailID, startdate, enddate):
         testCasesAdded = res["aggregations"]["DevwiseAdded"]["value"]
         testCasesDeleted = res["aggregations"]["DevwiseDeleted"]["value"]
 
+        # query to get team name of selected developer
+        query = {
+            "size": 0,
+            "query": {
+                "term": {
+                    "email.keyword": {
+                        "value": givenEmailID,
+                    }
+                }
+            },
+            "aggs": {
+                "Teams": {"terms": {"field": "cloudName.keyword", "size": 2147483647}},
+            },
+        }
+
+        result = es.search(index="unit_test_tracker", body=query)
+
         # taking teamNameSet from the result
         teamNameSet = set()
-        for i in res["aggregations"]["Teams"]["buckets"]:
+        for i in result["aggregations"]["Teams"]["buckets"]:
             teamName = i["key"]
             teamNameSet.add(teamName)
 
-        return str(teamNameSet), effectiveTestCases, testCasesAdded, testCasesDeleted
+        teamNameList = list(teamNameSet)
+        teamNameString = str(teamNameList[0])
+        for i in range(1, len(teamNameList)):
+            teamNameString += ", " + str(teamNameList[i])
+
+        return teamNameString, effectiveTestCases, testCasesAdded, testCasesDeleted
 
 
 # function plot count of testcases vs time for selected developer for selected date-range
@@ -161,10 +183,6 @@ def devpage_row3(timePeriod, testCaseType, givenEmailID, startdate, enddate):
             start_date_plus_fourmonths = start_date_object + relativedelta(months=4)
             fig.update_xaxes(
                 rangeslider_visible=True,
-                range=[
-                    start_date_object,
-                    min(start_date_plus_fourmonths, end_date_object),
-                ],
                 # range slider option
                 rangeselector=dict(
                     buttons=list(

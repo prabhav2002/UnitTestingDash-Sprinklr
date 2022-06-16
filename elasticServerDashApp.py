@@ -3,5 +3,5 @@ from elasticsearch import Elasticsearch
 
 
 def elasitcServerDashApp():
-    es = Elasticsearch()
+    es = Elasticsearch(refresh="true")
     return es
