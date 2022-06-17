@@ -56,7 +56,7 @@ def exportpage_row1(timePeriod, startdate, enddate):
         columns=["Date", "TotalEffectiveTests", "TotalTestsAdded", "TotalTestsDeleted"],
     )
 
-    if timePeriod == "Week-wise Aggregation":
+    if timePeriod == "Weekly":
         dfWeek = df.copy()
         dfWeek = (
             dfWeek.groupby([pd.Grouper(key="Date", freq="W-SUN")])[
@@ -66,10 +66,10 @@ def exportpage_row1(timePeriod, startdate, enddate):
             .reset_index()
             .sort_values("Date")
         )
-        dfWeek["Date"] = dfWeek["Date"].dt.strftime("%W")
+        dfWeek["Date"] = dfWeek["Date"].dt.strftime("%W, %Y")
         dfWeek.rename(columns={"Date": "Week Number of the Year"}, inplace=True)
         return dfWeek.to_json(orient="split")
-    elif timePeriod == "Month-wise Aggregation":
+    elif timePeriod == "Monthly":
         dfMonth = df.copy()
         dfMonth = (
             dfMonth.groupby([pd.Grouper(key="Date", freq="1M")])[
@@ -79,7 +79,7 @@ def exportpage_row1(timePeriod, startdate, enddate):
             .reset_index()
             .sort_values("Date")
         )
-        dfMonth["Date"] = dfMonth["Date"].dt.strftime("%B")
+        dfMonth["Date"] = dfMonth["Date"].dt.strftime("%b, %Y")
         dfMonth.rename(columns={"Date": "Month"}, inplace=True)
         return dfMonth.to_json(orient="split")
     else:
@@ -143,9 +143,9 @@ def exportpage_row2(givenEmailID, timePeriod, startdate, enddate):
         data, columns=["Date", "Test Added", "Test Deleted", "Effective Test Cases"]
     )
 
-    if timePeriod == "Date-wise Aggregation":
+    if timePeriod == "Daily":
         return df.to_json(orient="split")
-    elif timePeriod == "Week-wise Aggregation":
+    elif timePeriod == "Weekly":
         dfWeek = df.copy()
         dfWeek = (
             dfWeek.groupby([pd.Grouper(key="Date", freq="W-SUN")])[
@@ -155,7 +155,7 @@ def exportpage_row2(givenEmailID, timePeriod, startdate, enddate):
             .reset_index()
             .sort_values("Date")
         )
-        dfWeek["Date"] = dfWeek["Date"].dt.strftime("%W")
+        dfWeek["Date"] = dfWeek["Date"].dt.strftime("%W, %Y")
         dfWeek.rename(columns={"Date": "Week Number of the Year"}, inplace=True)
         return dfWeek.to_json(orient="split")
     else:
@@ -168,7 +168,7 @@ def exportpage_row2(givenEmailID, timePeriod, startdate, enddate):
             .reset_index()
             .sort_values("Date")
         )
-        dfMonth["Date"] = dfMonth["Date"].dt.strftime("%B")
+        dfMonth["Date"] = dfMonth["Date"].dt.strftime("%b, %Y")
         dfMonth.rename(columns={"Date": "Month"}, inplace=True)
         return dfMonth.to_json(orient="split")
 
@@ -230,9 +230,9 @@ def exportpage_row3(givenTeam, timePeriod, startdate, enddate):
         data, columns=["Date", "Test Added", "Test Deleted", "Effective Test Cases"]
     )
 
-    if timePeriod == "Date-wise Aggregation":
+    if timePeriod == "Daily":
         return df.to_json(orient="split")
-    elif timePeriod == "Week-wise Aggregation":
+    elif timePeriod == "Weekly":
         dfWeek = df.copy()
         dfWeek = (
             dfWeek.groupby([pd.Grouper(key="Date", freq="W-SUN")])[
@@ -242,7 +242,7 @@ def exportpage_row3(givenTeam, timePeriod, startdate, enddate):
             .reset_index()
             .sort_values("Date")
         )
-        dfWeek["Date"] = dfWeek["Date"].dt.strftime("%W")
+        dfWeek["Date"] = dfWeek["Date"].dt.strftime("%W, %Y")
         dfWeek.rename(columns={"Date": "Week Number of the Year"}, inplace=True)
         return dfWeek.to_json(orient="split")
     else:
@@ -255,7 +255,7 @@ def exportpage_row3(givenTeam, timePeriod, startdate, enddate):
             .reset_index()
             .sort_values("Date")
         )
-        dfMonth["Date"] = dfMonth["Date"].dt.strftime("%B")
+        dfMonth["Date"] = dfMonth["Date"].dt.strftime("%b, %Y")
         dfMonth.rename(columns={"Date": "Month"}, inplace=True)
         return dfMonth.to_json(orient="split")
 

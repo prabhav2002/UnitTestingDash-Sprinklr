@@ -114,11 +114,11 @@ def export_layout():
                     ),
                     dcc.Dropdown(
                         [
-                            "Date-wise Aggregation",
-                            "Week-wise Aggregation",
-                            "Month-wise Aggregation",
+                            "Daily",
+                            "Weekly",
+                            "Monthly",
                         ],
-                        "Date-wise Aggregation",
+                        "Daily",
                         clearable=False,
                         id="timePeriod-dropdown-exportpage1",
                     ),
@@ -184,11 +184,11 @@ def export_layout():
                             dbc.Col(
                                 dcc.Dropdown(
                                     [
-                                        "Date-wise Aggregation",
-                                        "Week-wise Aggregation",
-                                        "Month-wise Aggregation",
+                                        "Daily",
+                                        "Weekly",
+                                        "Monthly",
                                     ],
-                                    "Date-wise Aggregation",
+                                    "Daily",
                                     clearable=False,
                                     id="timePeriod-dropdown-devexportpage",
                                 )
@@ -257,11 +257,11 @@ def export_layout():
                             dbc.Col(
                                 dcc.Dropdown(
                                     [
-                                        "Date-wise Aggregation",
-                                        "Week-wise Aggregation",
-                                        "Month-wise Aggregation",
+                                        "Daily",
+                                        "Weekly",
+                                        "Monthly",
                                     ],
-                                    "Date-wise Aggregation",
+                                    "Daily",
                                     clearable=False,
                                     id="timePeriod-dropdown-teamexportpage",
                                 )

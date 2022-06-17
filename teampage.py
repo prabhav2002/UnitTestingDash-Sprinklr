@@ -131,7 +131,7 @@ def teampage_row3(timePeriod, teamNamesMultiDropdown, testCaseType, startdate, e
     df = pd.DataFrame(data, columns=["Date", "TestCaseCount", "Team"])
 
     # aggregated date-wise and plotting of data
-    if timePeriod == "Date-wise Aggregation":
+    if timePeriod == "Daily":
         fig = px.bar(
             df,
             x="Date",
@@ -160,7 +160,7 @@ def teampage_row3(timePeriod, teamNamesMultiDropdown, testCaseType, startdate, e
         return fig
 
     # aggregated week-wise and plotting of data
-    elif timePeriod == "Week-wise Aggregation":
+    elif timePeriod == "Weekly":
         dfWeek = df.copy()
         dfWeek = (
             dfWeek.groupby(["Team", pd.Grouper(key="Date", freq="W-SUN")])[
@@ -170,7 +170,7 @@ def teampage_row3(timePeriod, teamNamesMultiDropdown, testCaseType, startdate, e
             .reset_index()
             .sort_values("Date")
         )
-        dfWeek["Date"] = dfWeek["Date"].dt.strftime("%W")
+        dfWeek["Date"] = dfWeek["Date"].dt.strftime("%W, %Y")
         dfWeek.rename(columns={"Date": "Week"}, inplace=True)
         fig = px.bar(
             dfWeek,
@@ -196,7 +196,7 @@ def teampage_row3(timePeriod, teamNamesMultiDropdown, testCaseType, startdate, e
             .reset_index()
             .sort_values("Date")
         )
-        dfMonth["Date"] = dfMonth["Date"].dt.strftime("%B")
+        dfMonth["Date"] = dfMonth["Date"].dt.strftime("%b, %Y")
         dfMonth.rename(columns={"Date": "Month"}, inplace=True)
         fig = px.bar(
             dfMonth,

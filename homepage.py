@@ -126,7 +126,7 @@ def homepage_row3(timePeriod, startdate, enddate):
     )
 
     # converting dataframe for week-wise aggregation and plotting of dataframe
-    if timePeriod == "Week-wise Aggregation":
+    if timePeriod == "Weekly":
         dfWeek = df.copy()
         dfWeek = (
             dfWeek.groupby([pd.Grouper(key="Date", freq="W-SUN")])[
@@ -136,7 +136,7 @@ def homepage_row3(timePeriod, startdate, enddate):
             .reset_index()
             .sort_values("Date")
         )
-        dfWeek["Date"] = dfWeek["Date"].dt.strftime("%W")
+        dfWeek["Date"] = dfWeek["Date"].dt.strftime("%W, %Y")
         plot = px.bar(
             dfWeek,
             x="Date",
@@ -155,7 +155,7 @@ def homepage_row3(timePeriod, startdate, enddate):
         return plot
 
     # converting dataframe for month-wise aggregation and plotting of dataframe
-    elif timePeriod == "Month-wise Aggregation":
+    elif timePeriod == "Monthly":
         dfMonth = df.copy()
         dfMonth = (
             dfMonth.groupby([pd.Grouper(key="Date", freq="1M")])[
@@ -165,7 +165,7 @@ def homepage_row3(timePeriod, startdate, enddate):
             .reset_index()
             .sort_values("Date")
         )
-        dfMonth["Date"] = dfMonth["Date"].dt.strftime("%B")
+        dfMonth["Date"] = dfMonth["Date"].dt.strftime("%b, %Y")
         plot = px.bar(
             dfMonth,
             x="Date",

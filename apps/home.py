@@ -305,11 +305,11 @@ def home_layout():
                     # dropdown for date-wise, week-wise, month-wise aggregation
                     dcc.Dropdown(
                         [
-                            "Date-wise Aggregation",
-                            "Week-wise Aggregation",
-                            "Month-wise Aggregation",
+                            "Daily",
+                            "Weekly",
+                            "Monthly",
                         ],
-                        "Date-wise Aggregation",
+                        "Daily",
                         clearable=False,
                         id="timePeriod-dropdown",
                     ),

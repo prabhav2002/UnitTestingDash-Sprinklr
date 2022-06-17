@@ -1,5 +1,7 @@
 # importing libraries
+from tkinter.tix import DisplayStyle
 from dash.dependencies import Input, Output
+from numpy import flexible
 from devpage import devpage_row1, devpage_row2, devpage_row3, devpage_row4
 from dash import html, dcc
 import dash_bootstrap_components as dbc
@@ -228,11 +230,11 @@ def dev_layout():
                             dbc.Col(
                                 dcc.Dropdown(
                                     [
-                                        "Date-wise Aggregation",
-                                        "Week-wise Aggregation",
-                                        "Month-wise Aggregation",
+                                        "Daily",
+                                        "Weekly",
+                                        "Monthly",
                                     ],
-                                    "Date-wise Aggregation",
+                                    "Daily",
                                     clearable=False,
                                     id="timePeriodDev-dropdown",
                                 )

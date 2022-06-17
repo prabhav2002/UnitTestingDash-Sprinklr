@@ -171,12 +171,12 @@ def devpage_row3(timePeriod, testCaseType, givenEmailID, startdate, enddate):
         df = pd.DataFrame(data, columns=["Date", "TestCaseCount"])
 
         # aggregated date-wise and plotting of data
-        if timePeriod == "Date-wise Aggregation":
+        if timePeriod == "Daily":
             fig = px.bar(
                 df,
                 x="Date",
                 y="TestCaseCount",
-                title=testCaseType + " by " + givenEmailID + " (Date-wise Aggregation)",
+                title=testCaseType + " by " + givenEmailID + " (Daily)",
                 height=900,
                 width=1100,
             )
@@ -196,11 +196,18 @@ def devpage_row3(timePeriod, testCaseType, givenEmailID, startdate, enddate):
                     )
                 ),
             )
+            if df.shape[0] > 1:
+                fig.update_xaxes(
+                    range=[
+                        start_date_object,
+                        min(end_date_object, start_date_plus_fourmonths),
+                    ]
+                )
             fig.update_yaxes(title=testCaseType)
             return fig
 
         # aggregated week-wise and plotting of data
-        elif timePeriod == "Week-wise Aggregation":
+        elif timePeriod == "Weekly":
             dfWeek = df.copy()
             dfWeek = (
                 dfWeek.groupby([pd.Grouper(key="Date", freq="W-SUN")])[
@@ -210,13 +217,13 @@ def devpage_row3(timePeriod, testCaseType, givenEmailID, startdate, enddate):
                 .reset_index()
                 .sort_values("Date")
             )
-            dfWeek["Date"] = dfWeek["Date"].dt.strftime("%W")
+            dfWeek["Date"] = dfWeek["Date"].dt.strftime("%W, %Y")
             dfWeek.rename(columns={"Date": "Week"}, inplace=True)
             fig = px.bar(
                 dfWeek,
                 x="Week",
                 y="TestCaseCount",
-                title=testCaseType + " by " + givenEmailID + " (Week-wise Aggregation)",
+                title=testCaseType + " by " + givenEmailID + " (Weekly)",
                 height=900,
                 width=1100,
             )
@@ -233,16 +240,13 @@ def devpage_row3(timePeriod, testCaseType, givenEmailID, startdate, enddate):
                 .reset_index()
                 .sort_values("Date")
             )
-            dfMonth["Date"] = dfMonth["Date"].dt.strftime("%B")
+            dfMonth["Date"] = dfMonth["Date"].dt.strftime("%b, %Y")
             dfMonth.rename(columns={"Date": "Month"}, inplace=True)
             fig = px.bar(
                 dfMonth,
                 x="Month",
                 y="TestCaseCount",
-                title=testCaseType
-                + " by "
-                + givenEmailID
-                + " (Month-wise Aggregation)",
+                title=testCaseType + " by " + givenEmailID + " (Monthly)",
                 height=900,
                 width=1100,
             )
@@ -255,9 +259,9 @@ def devpage_row3(timePeriod, testCaseType, givenEmailID, startdate, enddate):
 # selection for testcase type: added, deleted, effective
 def devpage_row4(givenEmailID1, givenEmailID2, testCaseType, startdate, enddate):
     if givenEmailID1 == None:
-        return px.bar()
+        return px.line()
     elif givenEmailID2 == None:
-        return px.bar()
+        return px.line()
     else:
         # setting testcase-type
         if testCaseType == "Effective Test Cases":

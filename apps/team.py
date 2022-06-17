@@ -161,11 +161,11 @@ def team_layout():
                             dbc.Col(
                                 dcc.Dropdown(
                                     [
-                                        "Date-wise Aggregation",
-                                        "Week-wise Aggregation",
-                                        "Month-wise Aggregation",
+                                        "Daily",
+                                        "Weekly",
+                                        "Monthly",
                                     ],
-                                    "Date-wise Aggregation",
+                                    "Daily",
                                     clearable=False,
                                     id="timePeriodteam-dropdown",
                                 )
