@@ -43,7 +43,7 @@ def main_layout():
                     dbc.NavLink("Home", href="/", active="exact"),
                     dbc.NavLink("Developer-wise", href="/dev", active="exact"),
                     dbc.NavLink("Team-wise", href="/team", active="exact"),
-                    dbc.NavLink("Leaderboad", href="/leader", active="exact"),
+                    dbc.NavLink("Leaderboard", href="/leader", active="exact"),
                     dbc.NavLink("Exports", href="/export", active="exact"),
                 ],
                 vertical=True,
