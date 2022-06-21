@@ -63,15 +63,15 @@ def leaderboard_row1(teamNamesMultiDropdown, startdate, enddate):
             test_added = j["TeamwiseAdded"]["value"]
             test_deleted = j["TeamwiseDeleted"]["value"]
             data.append([devName, teamName, effective_count, test_added, test_deleted])
-        # creating dataframe
-        df = pd.DataFrame(
-            data,
-            columns=[
-                "Email",
-                "Team",
-                "Effective Test Cases",
-                "Test Cases Added",
-                "Test Cases Deleted",
-            ],
-        )
+    # creating dataframe
+    df = pd.DataFrame(
+        data,
+        columns=[
+            "Email",
+            "Team",
+            "Effective Test Cases",
+            "Test Cases Added",
+            "Test Cases Deleted",
+        ],
+    )
     return df

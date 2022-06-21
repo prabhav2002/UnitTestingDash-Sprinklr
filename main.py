@@ -3,7 +3,7 @@ from dash import html, dcc
 from dash.dependencies import Input, Output
 import dash_bootstrap_components as dbc
 from app import app
-from apps import team, dev, home, export, leader
+from apps import team, dev, home, leader
 
 
 def main_layout():
@@ -44,7 +44,6 @@ def main_layout():
                     dbc.NavLink("Developer-wise", href="/dev", active="exact"),
                     dbc.NavLink("Team-wise", href="/team", active="exact"),
                     dbc.NavLink("Leaderboard", href="/leader", active="exact"),
-                    dbc.NavLink("Exports", href="/export", active="exact"),
                 ],
                 vertical=True,
                 pills=True,
@@ -85,8 +84,6 @@ def render_page_content(pathname):
         return team.team_layout()
     elif pathname == "/leader":
         return leader.leader_layout()
-    elif pathname == "/export":
-        return export.export_layout()
     # If the user tries to reach a different page, return a 404 message
     return dbc.Jumbotron(
         [

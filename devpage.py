@@ -10,7 +10,6 @@ from dateutil.relativedelta import relativedelta
 # connecting with elasticsearch server
 es = elasitcServerDashApp()
 
-
 # function get list of all developers in the provided data
 def devpage_row1():
     # aggregation to get all developers
@@ -29,7 +28,7 @@ def devpage_row1():
     return devEmailList
 
 
-# function to get team-name of developer, get total testcases added, deleted, effective during select date-range
+# function to get team-name of developer, get total testcases added, deleted, effective in the selected date-range
 def devpage_row2(givenEmailID, startdate, enddate):
     if givenEmailID == None:
         return "Enter the Sprinklr Mail ID above to see the team...", 0, 0, 0
@@ -39,7 +38,7 @@ def devpage_row2(givenEmailID, startdate, enddate):
         start_date_object = date.fromisoformat(startdate)
         end_date_object = date.fromisoformat(enddate)
 
-        # query to get date-wise aggregated count for testcases added, deleted, effective for selected developer
+        # query to get date-wise aggregated count for testcases added, deleted, effective for selected developer in the given date range
         query = {
             "size": 0,
             "query": {
@@ -107,25 +106,21 @@ def devpage_row2(givenEmailID, startdate, enddate):
 
 
 # function plot count of testcases vs time for selected developer for selected date-range
-# selection for date-wise, week-wise, month-wise aggregation
+# and get JSONfied data as output
+# selection for daily, weekly, monthly aggregation
 # selection for type of testcases: added, deleted, effective
 def devpage_row3(timePeriod, testCaseType, givenEmailID, startdate, enddate):
     if givenEmailID == None:
-        return px.bar()
+        data = []
+        dfDevNone = pd.DataFrame(data, columns=[])
+        return px.bar(), dfDevNone.to_json(orient="split")
     else:
-        # setting testcase-type
-        if testCaseType == "Effective Test Cases":
-            caseTypeString = "effectiveCount"
-        elif testCaseType == "Test Cases Added":
-            caseTypeString = "testAdded"
-        elif testCaseType == "Test Cases Deleted":
-            caseTypeString = "testDeleted"
 
         # converting startdate, enddate to timestamp
         start_date_object = date.fromisoformat(startdate)
         end_date_object = date.fromisoformat(enddate)
 
-        # query to get count selected testcase type date-wise aggregated for selected developer
+        # query to get count of test cases date-wise aggregated for selected developer in the selected date range
         query_filter = {
             "size": 0,
             "query": {
@@ -154,28 +149,42 @@ def devpage_row3(timePeriod, testCaseType, givenEmailID, startdate, enddate):
                         "interval": "day",
                         "format": "yyyy-MM-dd",
                     },
-                    "aggs": {"Total": {"sum": {"field": caseTypeString}}},
+                    "aggs": {
+                        "DatewiseEffective": {"sum": {"field": "effectiveCount"}},
+                        "DatewiseAdded": {"sum": {"field": "testAdded"}},
+                        "DatewiseDeleted": {"sum": {"field": "testDeleted"}},
+                    },
                 }
             },
         }
         res = es.search(index="unit_test_tracker", body=query_filter)
         data = []
         for i in res["aggregations"]["date"]["buckets"]:
-            testCaseCount = i["Total"]["value"]
+            effective_count = i["DatewiseEffective"]["value"]
+            test_added = i["DatewiseAdded"]["value"]
+            test_deleted = i["DatewiseDeleted"]["value"]
             # converting timezone to Asia/Kolkata
             timestamp = i["key"] + 66600000
             date_time = dt.fromtimestamp(int(timestamp) / 1000)
-            data.append([date_time, testCaseCount])
+            data.append([date_time, effective_count, test_added, test_deleted])
 
         # creating dataframe
-        df = pd.DataFrame(data, columns=["Date", "TestCaseCount"])
+        dfDev = pd.DataFrame(
+            data,
+            columns=[
+                "Date",
+                "Effective Test Cases",
+                "Test Cases Added",
+                "Test Cases Deleted",
+            ],
+        )
 
         # aggregated date-wise and plotting of data
         if timePeriod == "Daily":
             fig = px.bar(
-                df,
+                dfDev,
                 x="Date",
-                y="TestCaseCount",
+                y=testCaseType,
                 title=testCaseType + " by " + givenEmailID + " (Daily)",
                 height=900,
                 width=1100,
@@ -196,7 +205,7 @@ def devpage_row3(timePeriod, testCaseType, givenEmailID, startdate, enddate):
                     )
                 ),
             )
-            if df.shape[0] > 1:
+            if dfDev.shape[0] > 1:
                 fig.update_xaxes(
                     range=[
                         start_date_object,
@@ -204,38 +213,48 @@ def devpage_row3(timePeriod, testCaseType, givenEmailID, startdate, enddate):
                     ]
                 )
             fig.update_yaxes(title=testCaseType)
-            return fig
+            return fig, dfDev.to_json(orient="split")
 
         # aggregated week-wise and plotting of data
         elif timePeriod == "Weekly":
-            dfWeek = df.copy()
+            dfWeek = dfDev.copy()
             dfWeek = (
                 dfWeek.groupby([pd.Grouper(key="Date", freq="W-SUN")])[
-                    ("TestCaseCount")
+                    [
+                        "Effective Test Cases",
+                        "Test Cases Added",
+                        "Test Cases Deleted",
+                    ]
                 ]
                 .sum()
                 .reset_index()
                 .sort_values("Date")
             )
             dfWeek["Date"] = dfWeek["Date"].dt.strftime("%W, %Y")
-            dfWeek.rename(columns={"Date": "Week"}, inplace=True)
+            dfWeek.rename(columns={"Date": "Week Number of the Year"}, inplace=True)
             fig = px.bar(
                 dfWeek,
-                x="Week",
-                y="TestCaseCount",
+                x="Week Number of the Year",
+                y=testCaseType,
                 title=testCaseType + " by " + givenEmailID + " (Weekly)",
                 height=900,
                 width=1100,
             )
             fig.update_xaxes(title="Week Number of the Year", rangeslider_visible=True)
             fig.update_yaxes(title=testCaseType)
-            return fig
+            return fig, dfWeek.to_json(orient="split")
 
         # aggregated month-wise and plotting of data
         else:
-            dfMonth = df.copy()
+            dfMonth = dfDev.copy()
             dfMonth = (
-                dfMonth.groupby([pd.Grouper(key="Date", freq="1M")])[("TestCaseCount")]
+                dfMonth.groupby([pd.Grouper(key="Date", freq="1M")])[
+                    [
+                        "Effective Test Cases",
+                        "Test Cases Added",
+                        "Test Cases Deleted",
+                    ]
+                ]
                 .sum()
                 .reset_index()
                 .sort_values("Date")
@@ -245,14 +264,14 @@ def devpage_row3(timePeriod, testCaseType, givenEmailID, startdate, enddate):
             fig = px.bar(
                 dfMonth,
                 x="Month",
-                y="TestCaseCount",
+                y=testCaseType,
                 title=testCaseType + " by " + givenEmailID + " (Monthly)",
                 height=900,
                 width=1100,
             )
             fig.update_xaxes(title="Month", rangeslider_visible=True)
             fig.update_yaxes(title=testCaseType)
-            return fig
+            return fig, dfMonth.to_json(orient="split")
 
 
 # function to plot comparison between two developers for given date-range
@@ -275,7 +294,7 @@ def devpage_row4(givenEmailID1, givenEmailID2, testCaseType, startdate, enddate)
         start_date_object = date.fromisoformat(startdate)
         end_date_object = date.fromisoformat(enddate)
 
-        # query to get count of given testcase type aggregated date-wise for first selected developer
+        # query to get count of given testcase type aggregated date-wise for first selected developer in the selected date range
         query_filter = {
             "size": 0,
             "query": {
@@ -317,7 +336,7 @@ def devpage_row4(givenEmailID1, givenEmailID2, testCaseType, startdate, enddate)
             date_time = dt.fromtimestamp(int(timestamp) / 1000)
             data1.append([date_time, testCaseCount])
 
-        # query to get count of given testcase type aggregated date-wise for selected selected developer
+        # query to get count of given testcase type aggregated date-wise for second selected developer in the selected date range
         query_filter = {
             "size": 0,
             "query": {

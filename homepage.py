@@ -31,11 +31,25 @@ def homepage_row0():
     return min_date, max_date
 
 
-# function to get total testcases added, total testcases deleted and total effective testcases in overall data
-def homepage_row1():
-    # counting overall testCasesAdded, testCasesDeleted, and totalEffectivetestCases by aggregation
+# function to get total testcases added, total testcases deleted and total effective testcases in the given date range
+def homepage_row1(startdate, enddate):
+
+    # converting startdate, enddate to timestamp
+    start_date_object = date.fromisoformat(startdate)
+    end_date_object = date.fromisoformat(enddate)
+
+    # counting overall testCasesAdded, testCasesDeleted, and totalEffectivetestCases by aggregation in the selected date range
     query_filter = {
         "size": 0,
+        "query": {
+            "range": {
+                "fromTime": {
+                    "time_zone": "+05:30",
+                    "gte": start_date_object,
+                    "lte": end_date_object,
+                }
+            }
+        },
         "aggs": {
             "total_added": {"sum": {"field": "testAdded"}},
             "total_deleted": {"sum": {"field": "testDeleted"}},
@@ -53,6 +67,7 @@ def homepage_row1():
 
 # function to get count of unique teams and unique developers in the provided data
 def homepage_row2():
+
     # counting distinct number of teams and devs using cardinality as aggregation method
     query_filter = {
         "size": 0,
@@ -70,6 +85,7 @@ def homepage_row2():
 
 
 # function to plot overall data analytics
+# and get JSONfied dataframe of overall analytics
 # with the feature of date-wise, week-wise, month-wise aggregation
 def homepage_row3(timePeriod, startdate, enddate):
 
@@ -77,7 +93,7 @@ def homepage_row3(timePeriod, startdate, enddate):
     start_date_object = date.fromisoformat(startdate)
     end_date_object = date.fromisoformat(enddate)
 
-    # query to get the aggregation date-wise with total count of testcases added, deleted and effective.
+    # query to get the aggregation date-wise with total count of testcases added, deleted and effective in the selected date range.
     query_filter = {
         "size": 0,
         # putting start-date and end-date range as filter
@@ -125,12 +141,12 @@ def homepage_row3(timePeriod, startdate, enddate):
         columns=["Date", "TotalEffectiveTests", "TotalTestsAdded", "TotalTestsDeleted"],
     )
 
-    # converting dataframe for week-wise aggregation and plotting of dataframe
+    # converting dataframe for weekly stats and plotting of dataframe
     if timePeriod == "Weekly":
         dfWeek = df.copy()
         dfWeek = (
             dfWeek.groupby([pd.Grouper(key="Date", freq="W-SUN")])[
-                ("TotalEffectiveTests", "TotalTestsAdded", "TotalTestsDeleted")
+                ["TotalEffectiveTests", "TotalTestsAdded", "TotalTestsDeleted"]
             ]
             .sum()
             .reset_index()
@@ -141,8 +157,8 @@ def homepage_row3(timePeriod, startdate, enddate):
             dfWeek,
             x="Date",
             y=df.columns,
-            title="Week-wise Unit Testing Aggregation",
-            labels={"Date": "Week"},
+            labels={"Date": "Week Number of the Year"},
+            title="Unit Testing Analytics (Weekly)",
             height=700,
         )
         plot.update_xaxes(title="Week Number of the Year", rangeslider_visible=True)
@@ -152,14 +168,15 @@ def homepage_row3(timePeriod, startdate, enddate):
                 title="<b>Click here to<br>activate/deactivate<br>specific Test Case<br>Count Type<b>"
             )
         )
-        return plot
+        dfWeek.rename(columns={"Date": "Week Number of the Year"}, inplace=True)
+        return plot, dfWeek.to_json(orient="split")
 
-    # converting dataframe for month-wise aggregation and plotting of dataframe
+    # converting dataframe for monthly stats and plotting of dataframe
     elif timePeriod == "Monthly":
         dfMonth = df.copy()
         dfMonth = (
             dfMonth.groupby([pd.Grouper(key="Date", freq="1M")])[
-                ("TotalEffectiveTests", "TotalTestsAdded", "TotalTestsDeleted")
+                ["TotalEffectiveTests", "TotalTestsAdded", "TotalTestsDeleted"]
             ]
             .sum()
             .reset_index()
@@ -170,7 +187,7 @@ def homepage_row3(timePeriod, startdate, enddate):
             dfMonth,
             x="Date",
             y=df.columns,
-            title="Month-wise Unit Testing Aggregation",
+            title="Unit Testing Analytics (Monthly)",
             labels={"Date": "Month"},
             height=700,
         )
@@ -181,21 +198,21 @@ def homepage_row3(timePeriod, startdate, enddate):
                 title="<b>Click here to<br>activate/deactivate<br>specific Test Case<br>Count Type<b>"
             )
         )
-        return plot
+        dfMonth.rename(columns={"Date": "Month"}, inplace=True)
+        return plot, dfMonth.to_json(orient="split")
 
-    # plotting date-wise
+    # plotting daily stats
     else:
         plot = px.bar(
             df,
             x="Date",
             y=df.columns,
-            title="Date-wise Unit Testing Aggregation",
+            title="Unit Testing Analytics (Daily)",
             height=700,
         )
         start_date_plus_month = start_date_object + relativedelta(months=1)
         plot.update_xaxes(
             rangeslider_visible=True,
-            range=[start_date_object, min(start_date_plus_month, end_date_object)],
             rangeselector=dict(
                 buttons=list(
                     [
@@ -207,9 +224,13 @@ def homepage_row3(timePeriod, startdate, enddate):
             ),
         )
         plot.update_yaxes(title="Test Cases Count")
+        if df.shape[0] > 1:
+            plot.update_xaxes(
+                range=[start_date_object, min(start_date_plus_month, end_date_object)],
+            )
         plot.update_layout(
             legend=dict(
                 title="<b>Click here to<br>activate/deactivate<br>specific Test Case<br>Count Type<b>"
             )
         )
-        return plot
+        return plot, df.to_json(orient="split")

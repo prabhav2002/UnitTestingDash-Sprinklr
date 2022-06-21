@@ -4,6 +4,7 @@ from datetime import datetime as dt
 from datetime import date
 import pandas as pd
 import plotly.express as px
+import plotly.graph_objects as go
 from dateutil.relativedelta import relativedelta
 
 # connecting with elasticsearch server
@@ -31,7 +32,7 @@ def teampage_row1():
     return len(teamSet), teamList
 
 
-# fucntion to plot pie-chart of team-wise developer count.
+# function to plot pie-chart of team-wise developer count.
 def teampage_row2():
     teams, teamList = teampage_row1()
     data = []
@@ -64,20 +65,19 @@ def teampage_row2():
     return fig
 
 
-# function plot count of testcases vs time for selected teams for selected date-range
+# function plot count of testcases vs time for selected teams, get JSONfied data for selected date-range
 # selection for date-wise, week-wise, month-wise aggregation
 # selection for type of testcases: added, deleted, effective
 def teampage_row3(timePeriod, teamNamesMultiDropdown, testCaseType, startdate, enddate):
+
+    if teamNamesMultiDropdown == []:
+        data = []
+        dfTeamNone = pd.DataFrame(data, columns=[])
+        fig = go.Figure()
+        return fig, dfTeamNone.to_json(orient="split")
+
     if type(teamNamesMultiDropdown) == str:
         teamNamesMultiDropdown = [teamNamesMultiDropdown]
-
-    # setting testcase-type
-    if testCaseType == "Effective Test Cases":
-        caseTypeString = "effectiveCount"
-    elif testCaseType == "Test Cases Added":
-        caseTypeString = "testAdded"
-    elif testCaseType == "Test Cases Deleted":
-        caseTypeString = "testDeleted"
 
     # converting startdate, enddate to timestamp
     start_date_object = date.fromisoformat(startdate)
@@ -107,6 +107,7 @@ def teampage_row3(timePeriod, teamNamesMultiDropdown, testCaseType, startdate, e
                     ],
                 }
             },
+            # summation of date-wise aggregation of every test case type
             "aggs": {
                 "date": {
                     "date_histogram": {
@@ -114,30 +115,47 @@ def teampage_row3(timePeriod, teamNamesMultiDropdown, testCaseType, startdate, e
                         "interval": "day",
                         "format": "yyyy-MM-dd",
                     },
-                    "aggs": {"Total": {"sum": {"field": caseTypeString}}},
+                    "aggs": {
+                        "DatewiseEffective": {"sum": {"field": "effectiveCount"}},
+                        "DatewiseAdded": {"sum": {"field": "testAdded"}},
+                        "DatewiseDeleted": {"sum": {"field": "testDeleted"}},
+                    },
                 }
             },
         }
         res = es.search(index="unit_test_tracker", body=query_filter)
         for j in res["aggregations"]["date"]["buckets"]:
             teamName = i
-            testCaseCount = j["Total"]["value"]
+            effective_count = j["DatewiseEffective"]["value"]
+            test_added = j["DatewiseAdded"]["value"]
+            test_deleted = j["DatewiseDeleted"]["value"]
             # converting timezone to Asia/Kolkata
             timestamp = j["key"] + 66600000
             date_time = dt.fromtimestamp(int(timestamp) / 1000)
-            data.append([date_time, testCaseCount, teamName])
+            data.append(
+                [date_time, teamName, effective_count, test_added, test_deleted]
+            )
 
     # creating dataframe
-    df = pd.DataFrame(data, columns=["Date", "TestCaseCount", "Team"])
+    dfTeam = pd.DataFrame(
+        data,
+        columns=[
+            "Date",
+            "Team",
+            "Effective Test Cases",
+            "Test Cases Added",
+            "Test Cases Deleted",
+        ],
+    )
 
     # aggregated date-wise and plotting of data
     if timePeriod == "Daily":
         fig = px.bar(
-            df,
+            dfTeam,
             x="Date",
-            y="TestCaseCount",
+            y=testCaseType,
             color="Team",
-            title="Team-wise " + testCaseType,
+            title="Team-wise " + testCaseType + " (Daily)",
             height=900,
             width=1100,
         )
@@ -157,70 +175,69 @@ def teampage_row3(timePeriod, teamNamesMultiDropdown, testCaseType, startdate, e
             ),
         )
         fig.update_yaxes(title=testCaseType)
-        return fig
+        return fig, dfTeam.to_json(orient="split")
 
     # aggregated week-wise and plotting of data
     elif timePeriod == "Weekly":
-        dfWeek = df.copy()
+        dfWeek = dfTeam.copy()
         dfWeek = (
             dfWeek.groupby(["Team", pd.Grouper(key="Date", freq="W-SUN")])[
-                ("TestCaseCount")
+                [
+                    "Effective Test Cases",
+                    "Test Cases Added",
+                    "Test Cases Deleted",
+                ]
             ]
             .sum()
             .reset_index()
-            .sort_values("Date")
         )
         dfWeek["Date"] = dfWeek["Date"].dt.strftime("%W, %Y")
-        dfWeek.rename(columns={"Date": "Week"}, inplace=True)
+        dfWeek.rename(columns={"Date": "Week Number of the Year"}, inplace=True)
         fig = px.bar(
             dfWeek,
-            x="Week",
-            y="TestCaseCount",
+            x="Week Number of the Year",
+            y=testCaseType,
             color="Team",
-            title="Team-wise " + testCaseType,
+            title="Team-wise " + testCaseType + " (Weekly)",
             height=900,
             width=1100,
         )
         fig.update_xaxes(title="Week Number of the Year", rangeslider_visible=True)
         fig.update_yaxes(title=testCaseType)
-        return fig
+        return fig, dfWeek.to_json(orient="split")
 
     # aggregated month-wise and plotting of data
     else:
-        dfMonth = df.copy()
+        dfMonth = dfTeam.copy()
         dfMonth = (
             dfMonth.groupby(["Team", pd.Grouper(key="Date", freq="1M")])[
-                ("TestCaseCount")
+                [
+                    "Effective Test Cases",
+                    "Test Cases Added",
+                    "Test Cases Deleted",
+                ]
             ]
             .sum()
             .reset_index()
-            .sort_values("Date")
         )
         dfMonth["Date"] = dfMonth["Date"].dt.strftime("%b, %Y")
         dfMonth.rename(columns={"Date": "Month"}, inplace=True)
         fig = px.bar(
             dfMonth,
             x="Month",
-            y="TestCaseCount",
+            y=testCaseType,
             color="Team",
-            title="Team-wise " + testCaseType,
+            title="Team-wise " + testCaseType + " (Monthly)",
             height=900,
             width=1100,
         )
         fig.update_xaxes(title="Month", rangeslider_visible=True)
         fig.update_yaxes(title=testCaseType)
-        return fig
+        return fig, dfMonth.to_json(orient="split")
 
 
-# plot the stats of developers of the selected team in selected date range
+# plot the stats of developers and get JSONfied data of the selected team in selected date range
 def teampage_row4(team, testCaseType, startdate, enddate):
-    # setting testcase-type
-    if testCaseType == "Effective Test Cases":
-        caseTypeString = "effectiveCount"
-    elif testCaseType == "Test Cases Added":
-        caseTypeString = "testAdded"
-    elif testCaseType == "Test Cases Deleted":
-        caseTypeString = "testDeleted"
 
     # converting startdate, enddate to timestamp
     start_date_object = date.fromisoformat(startdate)
@@ -253,7 +270,11 @@ def teampage_row4(team, testCaseType, startdate, enddate):
         "aggs": {
             "dev": {
                 "terms": {"field": "email.keyword", "size": 2147483647},
-                "aggs": {"testCaseCount": {"sum": {"field": caseTypeString}}},
+                "aggs": {
+                    "DatewiseEffective": {"sum": {"field": "effectiveCount"}},
+                    "DatewiseAdded": {"sum": {"field": "testAdded"}},
+                    "DatewiseDeleted": {"sum": {"field": "testDeleted"}},
+                },
             },
         },
     }
@@ -262,20 +283,30 @@ def teampage_row4(team, testCaseType, startdate, enddate):
     # saving result to data
     for j in res["aggregations"]["dev"]["buckets"]:
         devName = j["key"]
-        count = j["testCaseCount"]["value"]
-        data.append([devName, count])
+        effective_count = j["DatewiseEffective"]["value"]
+        test_added = j["DatewiseAdded"]["value"]
+        test_deleted = j["DatewiseDeleted"]["value"]
+        data.append([devName, effective_count, test_added, test_deleted])
 
     # creating dataframe and sorting it by Email field
-    df = pd.DataFrame(data, columns=["Email", "Test Case Count"])
+    df = pd.DataFrame(
+        data,
+        columns=[
+            "Email",
+            "Effective Test Cases",
+            "Test Cases Added",
+            "Test Cases Deleted",
+        ],
+    )
     df = df.sort_values("Email")
 
     # plot
     fig = px.bar(
         df,
         x="Email",
-        y="Test Case Count",
+        y=testCaseType,
         title="Total " + testCaseType + " by Developers (Team: " + team + " )",
         height=900,
         width=1100,
     )
-    return fig
+    return fig, df.to_json(orient="split")
