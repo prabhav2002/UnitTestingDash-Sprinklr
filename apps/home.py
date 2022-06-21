@@ -1,6 +1,7 @@
 # importing libraries
 from dash.dependencies import Input, Output
 from dash import html, dcc
+import pandas as pd
 import dash_bootstrap_components as dbc
 from datetime import datetime as dt
 from datetime import date
@@ -19,8 +20,7 @@ def home_layout():
     min_datem = dt.strptime(str(min_date), "%Y-%m-%d %H:%M:%S")
     max_datem = dt.strptime(str(max_date), "%Y-%m-%d %H:%M:%S")
 
-    # getting total testcases added, deleted, effective, total teams, total devs using homepage function
-    totalAdded, totalDeleted, totalEffective = homepage_row1()
+    # getting total teams, total devs using homepage function
     totalDevs, totalTeams = homepage_row2()
 
     # layout of homepage
@@ -42,21 +42,7 @@ def home_layout():
                     dbc.Row(
                         [
                             dbc.Col(
-                                html.H5(
-                                    children="This app marks my very first attempt at using Plotly, Dash and Elasticsearch! "
-                                ),
-                                className="mb-4",
-                            )
-                        ]
-                    ),
-                    dbc.Row(
-                        [
-                            dbc.Col(
-                                html.H5(
-                                    children="It consists of three main pages: Developer-wise, which helps you analyse the unit-testing data for specific developer, also provides the feature to do compariosn between developers; "
-                                    "Team-wise, which gives an overview of data team-wise, also display the info for the developers within a team; "
-                                    "Export, which helps download dropdown filtered data as Excel."
-                                ),
+                                html.H5(children="//brief usage description"),
                                 className="mb-5",
                             )
                         ]
@@ -108,89 +94,19 @@ def home_layout():
                         ],
                         className="mb-5",
                     ),
+                    # title of the page
                     dbc.Row(
                         [
                             dbc.Col(
-                                html.H1("Overall Analytics", className="text-center"),
+                                html.H1(
+                                    "Overall Unit Testing Analytics",
+                                    className="text-center",
+                                ),
                                 className="mb-5 mt-5",
                             )
                         ]
                     ),
-                    dbc.Row(
-                        [
-                            dbc.Col(
-                                html.H5(
-                                    children="DateRange of below Stats, From: "
-                                    + str(min_date)[0:10]
-                                    + " To: "
-                                    + str(max_date)[0:10],
-                                    className="text-center",
-                                ),
-                                className="mb-5",
-                            )
-                        ]
-                    ),
-                    dbc.Row(
-                        [
-                            dbc.Col(
-                                dbc.Card(
-                                    children=[
-                                        html.H6(
-                                            children="Total Unit Test Cases Added",
-                                            className="text-center",
-                                        ),
-                                        html.H1(
-                                            children=totalAdded, className="text-center"
-                                        ),
-                                    ],
-                                    body=True,
-                                    color="dark",
-                                    outline=True,
-                                ),
-                                width=4,
-                                className="mb-4",
-                            ),
-                            dbc.Col(
-                                dbc.Card(
-                                    children=[
-                                        html.H6(
-                                            children="Total Unit Test Cases Deleted",
-                                            className="text-center",
-                                        ),
-                                        html.H1(
-                                            children=totalDeleted,
-                                            className="text-center",
-                                        ),
-                                    ],
-                                    body=True,
-                                    color="dark",
-                                    outline=True,
-                                ),
-                                width=4,
-                                className="mb-4",
-                            ),
-                            dbc.Col(
-                                dbc.Card(
-                                    children=[
-                                        html.H6(
-                                            children="Total Effective Unit Test Cases",
-                                            className="text-center",
-                                        ),
-                                        html.H1(
-                                            children=totalEffective,
-                                            className="text-center",
-                                        ),
-                                    ],
-                                    body=True,
-                                    color="dark",
-                                    outline=True,
-                                ),
-                                width=4,
-                                className="mb-4",
-                            ),
-                        ],
-                        className="mb-5",
-                    ),
+                    # total teams and total devs stats
                     dbc.Row(
                         [
                             dbc.Col(
@@ -232,7 +148,6 @@ def home_layout():
                         ],
                         className="mb-5",
                     ),
-                    # date range picker to filter the data using date-range.
                     dbc.Row(
                         [
                             dbc.Col(
@@ -265,9 +180,9 @@ def home_layout():
                                             ),
                                             display_format="DD-MM-YYYY",
                                             initial_visible_month=date(
-                                                min_datem.year,
-                                                min_datem.month,
-                                                min_datem.day,
+                                                max_datem.year,
+                                                max_datem.month,
+                                                max_datem.day,
                                             ),
                                             start_date=date(
                                                 min_datem.year,
@@ -291,18 +206,80 @@ def home_layout():
                         ],
                         className="mb-5",
                     ),
+                    # test cases stats in the given date range
+                    dbc.Row(
+                        [
+                            dbc.Col(
+                                dbc.Card(
+                                    children=[
+                                        html.H6(
+                                            children="Total Unit Test Cases Added",
+                                            className="text-center",
+                                        ),
+                                        html.H1(
+                                            id="totalAddedHome", className="text-center"
+                                        ),
+                                    ],
+                                    body=True,
+                                    color="dark",
+                                    outline=True,
+                                ),
+                                width=4,
+                                className="mb-4",
+                            ),
+                            dbc.Col(
+                                dbc.Card(
+                                    children=[
+                                        html.H6(
+                                            children="Total Unit Test Cases Deleted",
+                                            className="text-center",
+                                        ),
+                                        html.H1(
+                                            id="totalDeletedHome",
+                                            className="text-center",
+                                        ),
+                                    ],
+                                    body=True,
+                                    color="dark",
+                                    outline=True,
+                                ),
+                                width=4,
+                                className="mb-4",
+                            ),
+                            dbc.Col(
+                                dbc.Card(
+                                    children=[
+                                        html.H6(
+                                            children="Total Effective Unit Test Cases",
+                                            className="text-center",
+                                        ),
+                                        html.H1(
+                                            id="totalEffectiveHome",
+                                            className="text-center",
+                                        ),
+                                    ],
+                                    body=True,
+                                    color="dark",
+                                    outline=True,
+                                ),
+                                width=4,
+                                className="mb-4",
+                            ),
+                        ],
+                        className="mb-5",
+                    ),
                     dbc.Row(
                         [
                             dbc.Col(
                                 html.H3(
-                                    "Plot of Overall Analytics in the selected Date Range",
+                                    "Plot of Overall Unit Testing Analytics in the selected Date Range",
                                     className="text-center",
                                 ),
                                 className="mb-5",
                             )
                         ]
                     ),
-                    # dropdown for date-wise, week-wise, month-wise aggregation
+                    # dropdown for daily, weekly, monthly
                     dcc.Dropdown(
                         [
                             "Daily",
@@ -314,6 +291,32 @@ def home_layout():
                         id="timePeriod-dropdown",
                     ),
                     dcc.Graph(id="overall_analytics"),
+                    dcc.Store(id="overall_analytics_df"),
+                    dbc.Row(
+                        [
+                            dbc.Col(
+                                dbc.Card(
+                                    children=[
+                                        html.H4(
+                                            children="Overall Unit Testing Analytics as per the above filter",
+                                            className="text-center",
+                                        ),
+                                        dbc.Button(
+                                            "Download as Excel",
+                                            id="overall_button_xlsx",
+                                            color="primary",
+                                            className="mt-3",
+                                        ),
+                                    ],
+                                    body=True,
+                                    color="dark",
+                                    outline=True,
+                                ),
+                                className="mb-4 mt-4",
+                            ),
+                        ]
+                    ),
+                    dcc.Download(id="overall_analytics_download_xlsx"),
                     html.A(
                         "Created by Prabhav Shah",
                         href="https://www.linkedin.com/in/prabhav-shah-7723281a0",
@@ -326,13 +329,39 @@ def home_layout():
 
 layout = home_layout()
 
+# callback to get the test cases stats in the given date range
+@app.callback(
+    Output("totalAddedHome", "children"),
+    Output("totalDeletedHome", "children"),
+    Output("totalEffectiveHome", "children"),
+    Input("home-date-picker-range", "start_date"),
+    Input("home-date-picker-range", "end_date"),
+)
+def get_testcase_stats(startdate, enddate):
+    totalAdded, totalDeleted, totalEffective = homepage_row1(startdate, enddate)
+    return str(int(totalAdded)), str(int(totalDeleted)), str(int(totalEffective))
+
+
 # callback to plot a graph of overall analytics
 @app.callback(
     Output("overall_analytics", "figure"),
+    Output("overall_analytics_df", "data"),
     Input("timePeriod-dropdown", "value"),
     Input("home-date-picker-range", "start_date"),
     Input("home-date-picker-range", "end_date"),
 )
 def get_figure_homepage(value, startdate, enddate):
-    fig = homepage_row3(value, startdate, enddate)
-    return fig
+    global dfjson_overall
+    fig, dfjson_overall = homepage_row3(value, startdate, enddate)
+    return fig, dfjson_overall
+
+
+# callback to get the above file downloaded as excel on clicking the button
+@app.callback(
+    Output("overall_analytics_download_xlsx", "data"),
+    Input("overall_button_xlsx", "n_clicks"),
+    prevent_initial_call=True,
+)
+def donwload_overall(n_clicks):
+    df = pd.read_json(dfjson_overall, orient="split")
+    return dcc.send_data_frame(df.to_excel, filename="overall_analytics_download.xlsx")

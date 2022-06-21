@@ -1,9 +1,13 @@
 # importing libraries
-from tkinter.tix import DisplayStyle
 from dash.dependencies import Input, Output
-from numpy import flexible
-from devpage import devpage_row1, devpage_row2, devpage_row3, devpage_row4
+from devpage import (
+    devpage_row1,
+    devpage_row2,
+    devpage_row3,
+    devpage_row4,
+)
 from dash import html, dcc
+import pandas as pd
 import dash_bootstrap_components as dbc
 from homepage import homepage_row0
 from datetime import datetime as dt
@@ -25,6 +29,7 @@ def dev_layout():
         [
             dbc.Container(
                 [
+                    # title
                     dbc.Row(
                         [
                             dbc.Col(
@@ -36,6 +41,7 @@ def dev_layout():
                             )
                         ]
                     ),
+                    # total devs
                     dbc.Row(
                         [
                             dbc.Col(
@@ -82,7 +88,7 @@ def dev_layout():
                             )
                         ]
                     ),
-                    # date range picker to filter the data using date-range.
+                    # date range picker to filter the data using date-range (applicable for whole page) .
                     dbc.Row(
                         [
                             dbc.Col(dbc.Card(), className="mb-4"),
@@ -90,7 +96,7 @@ def dev_layout():
                                 dbc.Card(
                                     children=[
                                         dcc.DatePickerRange(
-                                            id="dev1-date-picker-range",
+                                            id="dev-date-picker-range",
                                             min_date_allowed=date(
                                                 min_datem.year,
                                                 min_datem.month,
@@ -103,9 +109,9 @@ def dev_layout():
                                             ),
                                             display_format="DD-MM-YYYY",
                                             initial_visible_month=date(
-                                                min_datem.year,
-                                                min_datem.month,
-                                                min_datem.day,
+                                                max_datem.year,
+                                                max_datem.month,
+                                                max_datem.day,
                                             ),
                                             start_date=date(
                                                 min_datem.year,
@@ -224,7 +230,7 @@ def dev_layout():
                         ],
                         className="mb-5",
                     ),
-                    # dropdown for date-wise, week-wise, month-wise aggregation
+                    # dropdown for daily, weekly, monthly and dropdown for test-cases type
                     dbc.Row(
                         [
                             dbc.Col(
@@ -255,6 +261,33 @@ def dev_layout():
                         className="mb-5",
                     ),
                     dcc.Graph(id="dev-analytics"),
+                    # download as excel option
+                    dcc.Store(id="dev_analytics_df"),
+                    dbc.Row(
+                        [
+                            dbc.Col(
+                                dbc.Card(
+                                    children=[
+                                        html.H4(
+                                            children="Developer-wise Analytics as per the above filter",
+                                            className="text-center",
+                                        ),
+                                        dbc.Button(
+                                            "Download as Excel",
+                                            id="dev_button_xlsx",
+                                            color="primary",
+                                            className="mt-3",
+                                        ),
+                                    ],
+                                    body=True,
+                                    color="dark",
+                                    outline=True,
+                                ),
+                                className="mb-4",
+                            ),
+                        ]
+                    ),
+                    dcc.Download(id="dev_analytics_download_xlsx"),
                     dbc.Row(),
                     dbc.Row(
                         [
@@ -267,7 +300,7 @@ def dev_layout():
                             )
                         ]
                     ),
-                    # select two maild IDs to create a comparison plot
+                    # select two mail IDs to create a comparison plot
                     dbc.Row(
                         [
                             dbc.Col(
@@ -326,8 +359,8 @@ layout = dev_layout()
     Output("totalAdded", "children"),
     Output("totalDeleted", "children"),
     Input("devMail-dropdown", "value"),
-    Input("dev1-date-picker-range", "start_date"),
-    Input("dev1-date-picker-range", "end_date"),
+    Input("dev-date-picker-range", "start_date"),
+    Input("dev-date-picker-range", "end_date"),
 )
 def get_dev_info(devMail, startdate, enddate):
     teamOfDev, effectiveTCbyDev, addedTCbyDev, deletedTCbyDev = devpage_row2(
@@ -336,18 +369,33 @@ def get_dev_info(devMail, startdate, enddate):
     return teamOfDev, effectiveTCbyDev, addedTCbyDev, deletedTCbyDev
 
 
-# callback to plot a graph of Developer-wise Analytics in the given DateRange
+# callback to plot a graph and get JSONfied data of Developer-wise Analytics in the given DateRange
 @app.callback(
     Output("dev-analytics", "figure"),
+    Output("dev_analytics_df", "data"),
     Input("timePeriodDev-dropdown", "value"),
     Input("testCaseDev-dropdown", "value"),
     Input("devMail-dropdown", "value"),
-    Input("dev1-date-picker-range", "start_date"),
-    Input("dev1-date-picker-range", "end_date"),
+    Input("dev-date-picker-range", "start_date"),
+    Input("dev-date-picker-range", "end_date"),
 )
 def get_Dev_Figure(timePeriod, testCaseType, givenEmailID, startdate, enddate):
-    fig = devpage_row3(timePeriod, testCaseType, givenEmailID, startdate, enddate)
-    return fig
+    global dfjson_dev
+    fig, dfjson_dev = devpage_row3(
+        timePeriod, testCaseType, givenEmailID, startdate, enddate
+    )
+    return fig, dfjson_dev
+
+
+# callback to get the above file downloaded as excel on clicking the button
+@app.callback(
+    Output("dev_analytics_download_xlsx", "data"),
+    Input("dev_button_xlsx", "n_clicks"),
+    prevent_initial_call=True,
+)
+def donwload_overall(n_clicks):
+    df = pd.read_json(dfjson_dev, orient="split")
+    return dcc.send_data_frame(df.to_excel, filename="dev_analytics_download.xlsx")
 
 
 # callback to plot a graph of comparison between two developers in the given DateRange
@@ -356,8 +404,8 @@ def get_Dev_Figure(timePeriod, testCaseType, givenEmailID, startdate, enddate):
     Input("devMail-dropdown-1", "value"),
     Input("devMail-dropdown-2", "value"),
     Input("testCaseDev-dropdown-2", "value"),
-    Input("dev1-date-picker-range", "start_date"),
-    Input("dev1-date-picker-range", "end_date"),
+    Input("dev-date-picker-range", "start_date"),
+    Input("dev-date-picker-range", "end_date"),
 )
 def get_Dev_Comparison(givenEmailID1, givenEmailID2, testCaseType, startdate, enddate):
     fig = devpage_row4(givenEmailID1, givenEmailID2, testCaseType, startdate, enddate)

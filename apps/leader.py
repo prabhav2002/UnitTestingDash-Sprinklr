@@ -20,6 +20,7 @@ def leader_layout():
     max_datem_minus_week = dt.strptime(str(max_date_minus_week), "%Y-%m-%d %H:%M:%S")
 
     # getting total number of teams, name of all the teams, and team-wise developer count
+    global teamList
     totalTeams, teamList = teampage_row1()
 
     # layout of leaderboard
@@ -104,6 +105,7 @@ def leader_layout():
                                     teamList,
                                     teamList,
                                     clearable=False,
+                                    placeholder="Select Team(s) to get the leaderboard table...",
                                     id="leader-team-multi-dropdown",
                                     multi=True,
                                 )
@@ -134,14 +136,12 @@ layout = leader_layout()
     Input("leader-team-multi-dropdown", "value"),
     Input("leader-date-picker-range", "start_date"),
     Input("leader-date-picker-range", "end_date"),
-    prevent_intial_call=True,
 )
 def df_leaderboard(teamNamesMultiDropdown, startdate, enddate):
-    global df
-    df = leaderboard_row1(teamNamesMultiDropdown, startdate, enddate)
+    df_leader = leaderboard_row1(teamNamesMultiDropdown, startdate, enddate)
     return dash_table.DataTable(
-        columns=[{"name": i, "id": i} for i in df.columns],
-        data=df.to_dict("records"),
+        columns=[{"name": i, "id": i} for i in df_leader.columns],
+        data=df_leader.to_dict("records"),
         editable=True,
         sort_action="native",
         sort_mode="single",

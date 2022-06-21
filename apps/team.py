@@ -3,6 +3,7 @@ from dash.dependencies import Input, Output
 from teampage import teampage_row1, teampage_row2, teampage_row3, teampage_row4
 from dash import html, dcc
 import dash_bootstrap_components as dbc
+import pandas as pd
 from homepage import homepage_row0
 from datetime import datetime as dt
 from datetime import date
@@ -103,9 +104,9 @@ def team_layout():
                                             ),
                                             display_format="DD-MM-YYYY",
                                             initial_visible_month=date(
-                                                min_datem.year,
-                                                min_datem.month,
-                                                min_datem.day,
+                                                max_datem.year,
+                                                max_datem.month,
+                                                max_datem.day,
                                             ),
                                             start_date=date(
                                                 min_datem.year,
@@ -148,6 +149,7 @@ def team_layout():
                                     teamList,
                                     teamList[0],
                                     clearable=False,
+                                    placeholder="Select Team(s) to get the stats...",
                                     id="team-multi-dropdown",
                                     multi=True,
                                 )
@@ -155,7 +157,7 @@ def team_layout():
                         ],
                         className="mb-5",
                     ),
-                    # dropdown for date-wise, week-wise, month-wise aggregation
+                    # dropdown for daily, weekly, monthly, and dropdown for test cases types
                     dbc.Row(
                         [
                             dbc.Col(
@@ -186,6 +188,33 @@ def team_layout():
                         className="mb-5",
                     ),
                     dcc.Graph(id="team_analytics"),
+                    # downloading team-wise data as excel
+                    dcc.Store(id="team_analytics_df"),
+                    dbc.Row(
+                        [
+                            dbc.Col(
+                                dbc.Card(
+                                    children=[
+                                        html.H4(
+                                            children="Team-wise Analytics as per the above filter",
+                                            className="text-center",
+                                        ),
+                                        dbc.Button(
+                                            "Download as Excel",
+                                            id="team_button_xlsx",
+                                            color="primary",
+                                            className="mt-3",
+                                        ),
+                                    ],
+                                    body=True,
+                                    color="dark",
+                                    outline=True,
+                                ),
+                                className="mb-4",
+                            ),
+                        ]
+                    ),
+                    dcc.Download(id="team_analytics_download_xlsx"),
                     dbc.Row(
                         [
                             dbc.Col(
@@ -223,6 +252,33 @@ def team_layout():
                         className="mb-5",
                     ),
                     dcc.Graph(id="teamWiseDev_analytics"),
+                    # downlaoding dev-wise analytics for selected team as excel
+                    dcc.Store(id="teamdev_analytics_df"),
+                    dbc.Row(
+                        [
+                            dbc.Col(
+                                dbc.Card(
+                                    children=[
+                                        html.H4(
+                                            children="Developer-wise Analytics of the selected Team as per the above filter",
+                                            className="text-center",
+                                        ),
+                                        dbc.Button(
+                                            "Download as Excel",
+                                            id="teamdev_button_xlsx",
+                                            color="primary",
+                                            className="mt-3",
+                                        ),
+                                    ],
+                                    body=True,
+                                    color="dark",
+                                    outline=True,
+                                ),
+                                className="mb-4",
+                            ),
+                        ]
+                    ),
+                    dcc.Download(id="teamdev_analytics_download_xlsx"),
                     html.A(
                         "Created by Prabhav Shah",
                         href="https://www.linkedin.com/in/prabhav-shah-7723281a0",
@@ -235,36 +291,58 @@ def team_layout():
 
 layout = team_layout()
 
-# callback to get the plot of analytics for the selected teams in the given DateRange
+# callback to get the plot of analytics and JSONfied data for the selected teams in the given DateRange
 @app.callback(
     Output("team_analytics", "figure"),
-    [
-        Input("timePeriodteam-dropdown", "value"),
-        Input("team-multi-dropdown", "value"),
-        Input("testCaseteam-dropdown", "value"),
-        Input("team-date-picker-range", "start_date"),
-        Input("team-date-picker-range", "end_date"),
-    ],
+    Output("team_analytics_df", "data"),
+    Input("timePeriodteam-dropdown", "value"),
+    Input("team-multi-dropdown", "value"),
+    Input("testCaseteam-dropdown", "value"),
+    Input("team-date-picker-range", "start_date"),
+    Input("team-date-picker-range", "end_date"),
 )
 def get_figure_teampage(
     timePeriod, teamNamesMultiDropdown, testCaseType, startdate, enddate
 ):
-    fig = teampage_row3(
+    global dfjson_team
+    fig, dfjson_team = teampage_row3(
         timePeriod, teamNamesMultiDropdown, testCaseType, startdate, enddate
     )
-    return fig
+    return fig, dfjson_team
 
 
-# callback to get the plot of developer-wise count of testcases in selected team from overall provided data
+# callback to get the above file downloaded as excel on clicking the button
+@app.callback(
+    Output("team_analytics_download_xlsx", "data"),
+    Input("team_button_xlsx", "n_clicks"),
+    prevent_initial_call=True,
+)
+def donwload_overall(n_clicks):
+    dfTeam = pd.read_json(dfjson_team, orient="split")
+    return dcc.send_data_frame(dfTeam.to_excel, filename="team_analytics_download.xlsx")
+
+
+# callback to get the plot of developer-wise count of testcases and JSONfied data for selected team in the selected date range
 @app.callback(
     Output("teamWiseDev_analytics", "figure"),
-    [
-        Input("team-dropdown", "value"),
-        Input("testCaseteam2-dropdown", "value"),
-        Input("team-date-picker-range", "start_date"),
-        Input("team-date-picker-range", "end_date"),
-    ],
+    Output("teamdev_analytics_df", "data"),
+    Input("team-dropdown", "value"),
+    Input("testCaseteam2-dropdown", "value"),
+    Input("team-date-picker-range", "start_date"),
+    Input("team-date-picker-range", "end_date"),
 )
 def get_figure_teamWiseDev(team, testCaseType, startdate, enddate):
-    fig = teampage_row4(team, testCaseType, startdate, enddate)
-    return fig
+    global dfjson_teamdev
+    fig, dfjson_teamdev = teampage_row4(team, testCaseType, startdate, enddate)
+    return fig, dfjson_teamdev
+
+
+# callback to get the above file downloaded as excel on clicking the button
+@app.callback(
+    Output("teamdev_analytics_download_xlsx", "data"),
+    Input("teamdev_button_xlsx", "n_clicks"),
+    prevent_initial_call=True,
+)
+def donwload_overall(n_clicks):
+    df = pd.read_json(dfjson_teamdev, orient="split")
+    return dcc.send_data_frame(df.to_excel, filename="teamdev_analytics_download.xlsx")
