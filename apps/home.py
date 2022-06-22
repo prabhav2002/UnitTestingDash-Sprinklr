@@ -42,10 +42,132 @@ def home_layout():
                     dbc.Row(
                         [
                             dbc.Col(
-                                html.H5(children="//brief usage description"),
-                                className="mb-5",
+                                html.H5(
+                                    children="The Dashboard is divided into 4 pages. "
+                                ),
+                                className="text-center mt-5 mb-5",
                             )
                         ]
+                    ),
+                    dbc.Row(
+                        [
+                            dbc.Col(
+                                dbc.Card(
+                                    children=[
+                                        html.H4(
+                                            children="Home",
+                                            className="text-center",
+                                        ),
+                                        html.H6(
+                                            children="Total Teams, Total Devs",
+                                        ),
+                                        html.H6(
+                                            children="Overall Unit Testing Analytics",
+                                        ),
+                                    ],
+                                    body=True,
+                                    color="primary",
+                                    outline=True,
+                                ),
+                                className="mb-4",
+                            ),
+                            dbc.Col(
+                                dbc.Card(
+                                    children=[
+                                        html.H4(
+                                            children="Developer-wise",
+                                            className="text-center",
+                                        ),
+                                        html.H6(
+                                            children="Developer Analytics",
+                                        ),
+                                        html.H6(
+                                            children="Comparison between 2 Developers",
+                                        ),
+                                    ],
+                                    body=True,
+                                    color="primary",
+                                    outline=True,
+                                ),
+                                className="mb-4",
+                            ),
+                            dbc.Col(
+                                dbc.Card(
+                                    children=[
+                                        html.H4(
+                                            children="Team-wise",
+                                            className="text-center",
+                                        ),
+                                        html.H6(
+                                            children="Team Analytics",
+                                        ),
+                                        html.H6(
+                                            children="Developer Stats for selected Team",
+                                        ),
+                                    ],
+                                    body=True,
+                                    color="primary",
+                                    outline=True,
+                                ),
+                                className="mb-4",
+                            ),
+                            dbc.Col(
+                                dbc.Card(
+                                    children=[
+                                        html.H4(
+                                            children="Leaderboard",
+                                            className="text-center",
+                                        ),
+                                        html.H6(
+                                            children="Leaderboard Table",
+                                        ),
+                                        html.H6(
+                                            children="with DateRange selection and sorting filters",
+                                        ),
+                                    ],
+                                    body=True,
+                                    color="primary",
+                                    outline=True,
+                                ),
+                                className="mb-4",
+                            ),
+                        ],
+                        className="mb-5",
+                    ),
+                    dbc.Row(
+                        [
+                            dbc.Col(
+                                html.H4(children="General Usage Guidelines:"),
+                            )
+                        ]
+                    ),
+                    dbc.Row(
+                        [
+                            dbc.Col(
+                                html.H6(
+                                    children="1. Plots can be saved as PNG from the options given in the right corner of the plot."
+                                ),
+                            )
+                        ]
+                    ),
+                    dbc.Row(
+                        [
+                            dbc.Col(
+                                html.H6(
+                                    children="2. Data of the plot can be downloaded as Excel from the button given below the plot."
+                                ),
+                            )
+                        ]
+                    ),
+                    dbc.Row(
+                        [
+                            dbc.Col(
+                                html.H6(
+                                    children="3. Date Range selected will be applicable to the content of the of that page given below the Date Range Picker. "
+                                ),
+                            )
+                        ],
+                        className="mb-5",
                     ),
                     dbc.Row(
                         [
@@ -162,12 +284,12 @@ def home_layout():
                     # date range picker to filter the data using date-range.
                     dbc.Row(
                         [
-                            dbc.Col(dbc.Card(), className="mb-5"),
+                            dbc.Col(dbc.Card(), className="mb-4"),
                             dbc.Col(
                                 dbc.Card(
                                     children=[
                                         dcc.DatePickerRange(
-                                            id="home-date-picker-range",
+                                            id="leader-date-picker-range",
                                             min_date_allowed=date(
                                                 min_datem.year,
                                                 min_datem.month,
@@ -200,9 +322,9 @@ def home_layout():
                                     color="primary",
                                     outline=False,
                                 ),
-                                className="mb-5",
+                                className="mb-4",
                             ),
-                            dbc.Col(dbc.Card(), className="mb-5"),
+                            dbc.Col(dbc.Card(), className="mb-4"),
                         ],
                         className="mb-5",
                     ),
@@ -328,7 +450,6 @@ def home_layout():
 
 
 layout = home_layout()
-
 # callback to get the test cases stats in the given date range
 @app.callback(
     Output("totalAddedHome", "children"),

@@ -71,9 +71,9 @@ def leader_layout():
                                             ),
                                             display_format="DD-MM-YYYY",
                                             initial_visible_month=date(
-                                                min_datem.year,
-                                                min_datem.month,
-                                                min_datem.day,
+                                                max_datem.year,
+                                                max_datem.month,
+                                                max_datem.day,
                                             ),
                                             start_date=date(
                                                 max_datem_minus_week.year,
