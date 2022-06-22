@@ -4,6 +4,7 @@ from datetime import datetime as dt
 import pandas as pd
 import plotly.express as px
 from datetime import date
+import plotly.graph_objects as go
 from dateutil.relativedelta import relativedelta
 
 # connecting with elasticsearch server
@@ -140,6 +141,25 @@ def homepage_row3(timePeriod, startdate, enddate):
         data,
         columns=["Date", "TotalEffectiveTests", "TotalTestsAdded", "TotalTestsDeleted"],
     )
+
+    if df.shape[0] == 0:
+        dataNone = []
+        dfNone = pd.DataFrame(dataNone, columns=[])
+        fig = go.Figure()
+        fig.update_layout(
+            xaxis={"visible": False},
+            yaxis={"visible": False},
+            annotations=[
+                {
+                    "text": "Sorry... Nothing to plot with the selected filters!",
+                    "xref": "paper",
+                    "yref": "paper",
+                    "showarrow": False,
+                    "font": {"size": 28},
+                }
+            ],
+        )
+        return fig, dfNone.to_json(orient="split")
 
     # converting dataframe for weekly stats and plotting of dataframe
     if timePeriod == "Weekly":

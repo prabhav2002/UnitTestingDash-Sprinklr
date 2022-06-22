@@ -113,7 +113,21 @@ def devpage_row3(timePeriod, testCaseType, givenEmailID, startdate, enddate):
     if givenEmailID == None:
         data = []
         dfDevNone = pd.DataFrame(data, columns=[])
-        return px.bar(), dfDevNone.to_json(orient="split")
+        fig = go.Figure()
+        fig.update_layout(
+            xaxis={"visible": False},
+            yaxis={"visible": False},
+            annotations=[
+                {
+                    "text": "Select the Mail ID to see the plot!",
+                    "xref": "paper",
+                    "yref": "paper",
+                    "showarrow": False,
+                    "font": {"size": 28},
+                }
+            ],
+        )
+        return fig, dfDevNone.to_json(orient="split")
     else:
 
         # converting startdate, enddate to timestamp
@@ -178,6 +192,25 @@ def devpage_row3(timePeriod, testCaseType, givenEmailID, startdate, enddate):
                 "Test Cases Deleted",
             ],
         )
+
+        if dfDev.shape[0] == 0:
+            dataNone = []
+            dfNone = pd.DataFrame(dataNone, columns=[])
+            fig = go.Figure()
+            fig.update_layout(
+                xaxis={"visible": False},
+                yaxis={"visible": False},
+                annotations=[
+                    {
+                        "text": "Sorry... Nothing to plot with the selected filters!",
+                        "xref": "paper",
+                        "yref": "paper",
+                        "showarrow": False,
+                        "font": {"size": 28},
+                    }
+                ],
+            )
+            return fig, dfNone.to_json(orient="split")
 
         # aggregated date-wise and plotting of data
         if timePeriod == "Daily":
@@ -278,9 +311,37 @@ def devpage_row3(timePeriod, testCaseType, givenEmailID, startdate, enddate):
 # selection for testcase type: added, deleted, effective
 def devpage_row4(givenEmailID1, givenEmailID2, testCaseType, startdate, enddate):
     if givenEmailID1 == None:
-        return px.line()
+        fig = go.Figure()
+        fig.update_layout(
+            xaxis={"visible": False},
+            yaxis={"visible": False},
+            annotations=[
+                {
+                    "text": "Select the Mail IDs to see the plot!",
+                    "xref": "paper",
+                    "yref": "paper",
+                    "showarrow": False,
+                    "font": {"size": 28},
+                }
+            ],
+        )
+        return fig
     elif givenEmailID2 == None:
-        return px.line()
+        fig = go.Figure()
+        fig.update_layout(
+            xaxis={"visible": False},
+            yaxis={"visible": False},
+            annotations=[
+                {
+                    "text": "Select the Mail IDs to see the plot!",
+                    "xref": "paper",
+                    "yref": "paper",
+                    "showarrow": False,
+                    "font": {"size": 28},
+                }
+            ],
+        )
+        return fig
     else:
         # setting testcase-type
         if testCaseType == "Effective Test Cases":
@@ -381,6 +442,23 @@ def devpage_row4(givenEmailID1, givenEmailID2, testCaseType, startdate, enddate)
         df1 = pd.DataFrame(data1, columns=["Date", testCaseType])
         df2 = pd.DataFrame(data2, columns=["Date", testCaseType])
 
+        if df1.shape[0] == 0 and df2.shape[0] == 0:
+            fig = go.Figure()
+            fig.update_layout(
+                xaxis={"visible": False},
+                yaxis={"visible": False},
+                annotations=[
+                    {
+                        "text": "Sorry... Nothing to plot with the selected filters!",
+                        "xref": "paper",
+                        "yref": "paper",
+                        "showarrow": False,
+                        "font": {"size": 28},
+                    }
+                ],
+            )
+            return fig
+
         start_date_plus_twomonths = start_date_object + relativedelta(months=2)
 
         plot = go.Figure(
@@ -399,7 +477,6 @@ def devpage_row4(givenEmailID1, givenEmailID2, testCaseType, startdate, enddate)
         )
         plot.update_xaxes(
             rangeslider_visible=True,
-            range=[start_date_object, min(start_date_plus_twomonths, end_date_object)],
             rangeselector=dict(
                 buttons=list(
                     [
@@ -410,6 +487,13 @@ def devpage_row4(givenEmailID1, givenEmailID2, testCaseType, startdate, enddate)
                 )
             ),
         )
+        if df1.shape[0] > 1 or df2.shape[0] > 1:
+            plot.update_xaxes(
+                range=[
+                    start_date_object,
+                    min(end_date_object, start_date_plus_twomonths),
+                ]
+            )
         plot.update_layout(
             height=900, width=1100, title="Developer Comparison (" + testCaseType + ")"
         )

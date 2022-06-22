@@ -148,6 +148,25 @@ def teampage_row3(timePeriod, teamNamesMultiDropdown, testCaseType, startdate, e
         ],
     )
 
+    if dfTeam.shape[0] == 0:
+        dataNone = []
+        dfNone = pd.DataFrame(dataNone, columns=[])
+        fig = go.Figure()
+        fig.update_layout(
+            xaxis={"visible": False},
+            yaxis={"visible": False},
+            annotations=[
+                {
+                    "text": "Sorry... Nothing to plot with the selected filters!",
+                    "xref": "paper",
+                    "yref": "paper",
+                    "showarrow": False,
+                    "font": {"size": 28},
+                }
+            ],
+        )
+        return fig, dfNone.to_json(orient="split")
+
     # aggregated date-wise and plotting of data
     if timePeriod == "Daily":
         fig = px.bar(
@@ -163,7 +182,6 @@ def teampage_row3(timePeriod, teamNamesMultiDropdown, testCaseType, startdate, e
         start_date_plus_month = start_date_object + relativedelta(months=1)
         fig.update_xaxes(
             rangeslider_visible=True,
-            range=[start_date_object, min(start_date_plus_month, end_date_object)],
             rangeselector=dict(
                 buttons=list(
                     [
@@ -174,6 +192,13 @@ def teampage_row3(timePeriod, teamNamesMultiDropdown, testCaseType, startdate, e
                 )
             ),
         )
+        if dfTeam.shape[0] > 1:
+            fig.update_xaxes(
+                range=[
+                    start_date_object,
+                    min(end_date_object, start_date_plus_month),
+                ]
+            )
         fig.update_yaxes(title=testCaseType)
         return fig, dfTeam.to_json(orient="split")
 
@@ -299,6 +324,23 @@ def teampage_row4(team, testCaseType, startdate, enddate):
         ],
     )
     df = df.sort_values("Email")
+
+    if df.shape[0] == 0:
+        fig = go.Figure()
+        fig.update_layout(
+            xaxis={"visible": False},
+            yaxis={"visible": False},
+            annotations=[
+                {
+                    "text": "Sorry... Nothing to plot with the selected filters!",
+                    "xref": "paper",
+                    "yref": "paper",
+                    "showarrow": False,
+                    "font": {"size": 28},
+                }
+            ],
+        )
+        return fig, df.to_json(orient="split")
 
     # plot
     fig = px.bar(
