@@ -4,6 +4,7 @@ from dash.dependencies import Input, Output
 import dash_bootstrap_components as dbc
 from app import app
 from apps import team, dev, home, leader
+from environment.settings import APP_HOST, APP_PORT, APP_DEBUG, DEV_TOOLS_PROPS_CHECK
 
 
 def main_layout():
@@ -95,4 +96,9 @@ def render_page_content(pathname):
 
 
 if __name__ == "__main__":
-    app.run_server(debug=True)
+    app.run_server(
+        host=APP_HOST,
+        port=APP_PORT,
+        debug=APP_DEBUG,
+        dev_tools_props_check=DEV_TOOLS_PROPS_CHECK,
+    )
