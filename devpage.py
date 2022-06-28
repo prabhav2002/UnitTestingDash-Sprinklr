@@ -6,6 +6,7 @@ import plotly.express as px
 import plotly.graph_objects as go
 from datetime import date
 from dateutil.relativedelta import relativedelta
+import sys
 
 # connecting with elasticsearch server
 es = elasitcServerDashApp()
@@ -178,7 +179,7 @@ def devpage_row3(timePeriod, testCaseType, givenEmailID, startdate, enddate):
             test_added = i["DatewiseAdded"]["value"]
             test_deleted = i["DatewiseDeleted"]["value"]
             # converting timezone to Asia/Kolkata
-            timestamp = i["key"] + 66600000
+            timestamp = i["key"] + 86400000
             date_time = dt.fromtimestamp(int(timestamp) / 1000)
             data.append([date_time, effective_count, test_added, test_deleted])
 
@@ -393,7 +394,7 @@ def devpage_row4(givenEmailID1, givenEmailID2, testCaseType, startdate, enddate)
         for i in res["aggregations"]["date"]["buckets"]:
             testCaseCount = i["Total"]["value"]
             # converting timezone to Asia/Kolkata
-            timestamp = i["key"] + 66600000
+            timestamp = i["key"] + 86400000
             date_time = dt.fromtimestamp(int(timestamp) / 1000)
             data1.append([date_time, testCaseCount])
 
@@ -434,7 +435,7 @@ def devpage_row4(givenEmailID1, givenEmailID2, testCaseType, startdate, enddate)
         for i in res["aggregations"]["date"]["buckets"]:
             testCaseCount = i["Total"]["value"]
             # converting timezone to Asia/Kolkata
-            timestamp = i["key"] + 66600000
+            timestamp = i["key"] + 86400000
             date_time = dt.fromtimestamp(int(timestamp) / 1000)
             data2.append([date_time, testCaseCount])
 

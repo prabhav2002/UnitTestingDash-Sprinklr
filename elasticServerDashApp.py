@@ -3,5 +3,13 @@ from elasticsearch import Elasticsearch
 
 
 def elasitcServerDashApp():
-    es = Elasticsearch(["http://127.0.0.1:9200"], refresh=True, use_ssl=False)
+    lines = []
+    with open("IP.txt") as f:
+        lines = f.readlines()
+    es = Elasticsearch(
+        hosts=[{"host": lines[0]}],
+        refresh=True,
+        use_ssl=False,
+        retry_on_timeout=True,
+    )
     return es

@@ -4,8 +4,10 @@ from dash import dash_table
 from app import app
 import dash_bootstrap_components as dbc
 from datetime import date, timedelta
+from dateutil.relativedelta import relativedelta
 from datetime import datetime as dt
 from dash import dcc, html
+import dash
 from homepage import homepage_row0
 from teampage import teampage_row1
 from leaderboard import leaderboard_row1
@@ -53,7 +55,7 @@ def leader_layout():
                     # date range picker to filter the data using date-range.
                     dbc.Row(
                         [
-                            dbc.Col(dbc.Card(), className="mb-4"),
+                            dbc.Col(dbc.Card()),
                             dbc.Col(
                                 dbc.Card(
                                     children=[
@@ -91,11 +93,37 @@ def leader_layout():
                                     color="primary",
                                     outline=False,
                                 ),
-                                className="mb-4",
+                                className="text-center",
                             ),
-                            dbc.Col(dbc.Card(), className="mb-4"),
+                            dbc.Col(dbc.Card()),
                         ],
-                        className="mb-5",
+                        className="mb-2",
+                    ),
+                    dbc.Row(
+                        [
+                            dbc.Col(dbc.Card()),
+                            dbc.Col(
+                                dbc.ButtonGroup(
+                                    [
+                                        dbc.Button(
+                                            "Last 7 Days",
+                                            outline=True,
+                                            color="primary",
+                                            id="leaderdate-btn1",
+                                        ),
+                                        dbc.Button(
+                                            "Last Month",
+                                            outline=True,
+                                            color="primary",
+                                            id="leaderdate-btn2",
+                                        ),
+                                    ]
+                                ),
+                                className="text-center",
+                            ),
+                            dbc.Col(dbc.Card()),
+                        ],
+                        className="mb-4 flex center",
                     ),
                     # multi team select dropdown
                     dbc.Row(
@@ -164,3 +192,77 @@ def df_leaderboard(teamNamesMultiDropdown, startdate, enddate):
             },
         ],
     )
+
+
+# callback to get date range
+@app.callback(
+    Output("leader-date-picker-range", "start_date"),
+    Output("leader-date-picker-range", "end_date"),
+    Input("leaderdate-btn1", "n_clicks"),
+    Input("leaderdate-btn2", "n_clicks"),
+    prevent_initial_call=True,
+)
+def set_date_range_buttons(n_clicks_1, n_clicks_2):
+    # getting minimum and maximum date in provided data using homepage function
+    min_date_i, max_date_i = homepage_row0()
+    ctx = dash.callback_context
+    clicked_id = ctx.triggered[0]["prop_id"].split(".")[0]
+    if clicked_id == "leaderdate-btn1":
+        min_date = min_date_i
+        max_date = max_date_i
+        max_date_minus = max_date - relativedelta(days=6)
+        min_date = max(min_date, max_date_minus)
+        min_datem = dt.strptime(str(min_date), "%Y-%m-%d %H:%M:%S")
+        max_datem = dt.strptime(str(max_date), "%Y-%m-%d %H:%M:%S")
+        return (
+            date(
+                min_datem.year,
+                min_datem.month,
+                min_datem.day,
+            ),
+            date(
+                max_datem.year,
+                max_datem.month,
+                max_datem.day,
+            ),
+        )
+    elif clicked_id == "leaderdate-btn2":
+        min_date = min_date_i
+        max_date = max_date_i
+        last_day_of_prev_month = max_date.replace(day=1) - timedelta(days=1)
+        start_day_of_prev_month = max_date.replace(day=1) - timedelta(
+            days=last_day_of_prev_month.day
+        )
+        min_date = max(min_date, start_day_of_prev_month)
+        max_date = min(max_date, last_day_of_prev_month)
+        min_datem = dt.strptime(str(min_date), "%Y-%m-%d %H:%M:%S")
+        max_datem = dt.strptime(str(max_date), "%Y-%m-%d %H:%M:%S")
+        return (
+            date(
+                min_datem.year,
+                min_datem.month,
+                min_datem.day,
+            ),
+            date(
+                max_datem.year,
+                max_datem.month,
+                max_datem.day,
+            ),
+        )
+    else:
+        min_date = min_date_i
+        max_date = max_date_i
+        min_datem = dt.strptime(str(min_date), "%Y-%m-%d %H:%M:%S")
+        max_datem = dt.strptime(str(max_date), "%Y-%m-%d %H:%M:%S")
+        return (
+            date(
+                min_datem.year,
+                min_datem.month,
+                min_datem.day,
+            ),
+            date(
+                max_datem.year,
+                max_datem.month,
+                max_datem.day,
+            ),
+        )

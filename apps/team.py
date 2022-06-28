@@ -372,8 +372,10 @@ def get_figure_teamWiseDev(team, testCaseType, startdate, enddate):
     prevent_initial_call=True,
 )
 def donwload_overall(n_clicks):
-    df = pd.read_json(dfjson_teamdev, orient="split")
-    return dcc.send_data_frame(df.to_excel, filename="teamdev_analytics_download.xlsx")
+    dfTeamDev = pd.read_json(dfjson_teamdev, orient="split")
+    return dcc.send_data_frame(
+        dfTeamDev.to_excel, filename="teamdev_analytics_download.xlsx"
+    )
 
 
 # callback to get date range

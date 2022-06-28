@@ -512,8 +512,10 @@ def get_figure_homepage(value, startdate, enddate):
     prevent_initial_call=True,
 )
 def donwload_overall(n_clicks):
-    df = pd.read_json(dfjson_overall, orient="split")
-    return dcc.send_data_frame(df.to_excel, filename="overall_analytics_download.xlsx")
+    dfOverAll = pd.read_json(dfjson_overall, orient="split")
+    return dcc.send_data_frame(
+        dfOverAll.to_excel, filename="overall_analytics_download.xlsx"
+    )
 
 
 # callback to get date range

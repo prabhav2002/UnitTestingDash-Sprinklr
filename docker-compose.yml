@@ -1,13 +1,12 @@
 version: "3.7"
 
 services:
-  clean-dash:
+  unit-testing-dash:
     build:
       context: .
-    image: clean-dash:1.0.0
-    container_name: clean-dash
+    image: unit-testing-dash:1.0.0
+    container_name: unit-testing-dash
     ports:
       - "8089:8090"
     environment:
       - TARGET=LIVE
-    restart: unless-stopped

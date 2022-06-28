@@ -22,12 +22,12 @@ def homepage_row0():
     }
     res = es.search(index="unit_test_tracker", body=query_filter)
 
-    # getting min_date and max_date from resultant timestamp, addition of +66600000 to change the timezone
+    # getting min_date and max_date from resultant timestamp, addition of +86400000 to change the timezone
     min_date = dt.fromtimestamp(
-        int(res["aggregations"]["min_date"]["value"] + 66600000) / 1000
+        (int(res["aggregations"]["min_date"]["value"]) + 86400000) / 1000
     )
     max_date = dt.fromtimestamp(
-        int(res["aggregations"]["max_date"]["value"] + 66600000) / 1000
+        (int(res["aggregations"]["max_date"]["value"]) + 86400000) / 1000
     )
     return min_date, max_date
 
@@ -132,7 +132,7 @@ def homepage_row3(timePeriod, startdate, enddate):
         test_added = i["DatewiseAdded"]["value"]
         test_deleted = i["DatewiseDeleted"]["value"]
         # converting timezone to Asia/Kolkata
-        timestamp = i["key"] + 66600000
+        timestamp = i["key"] + 86400000
         date_time = dt.fromtimestamp(int(timestamp) / 1000)
         data.append([date_time, effective_count, test_added, test_deleted])
 

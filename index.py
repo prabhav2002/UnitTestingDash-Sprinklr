@@ -2,9 +2,10 @@
 from dash import html, dcc
 from dash.dependencies import Input, Output
 import dash_bootstrap_components as dbc
-from app import app
+from app import app, server
 from apps import team, dev, home, leader
 from environment.settings import APP_HOST, APP_PORT, APP_DEBUG, DEV_TOOLS_PROPS_CHECK
+from elasticsearch.exceptions import ConnectionError
 
 
 def main_layout():
@@ -30,7 +31,7 @@ def main_layout():
     # contents of sidebar
     sidebar = html.Div(
         [
-            html.Img(src="/assets/Sprinklr.png", height="50px"),
+            html.Img(src="/assets/Sprinklr.png", alt="Sprinklr", height="50px"),
             html.H2("Dashboard", className="display-4"),
             html.Hr(),
             html.P(

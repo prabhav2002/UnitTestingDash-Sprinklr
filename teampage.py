@@ -130,7 +130,7 @@ def teampage_row3(timePeriod, teamNamesMultiDropdown, testCaseType, startdate, e
             test_added = j["DatewiseAdded"]["value"]
             test_deleted = j["DatewiseDeleted"]["value"]
             # converting timezone to Asia/Kolkata
-            timestamp = j["key"] + 66600000
+            timestamp = j["key"] + 86400000
             date_time = dt.fromtimestamp(int(timestamp) / 1000)
             data.append(
                 [date_time, teamName, effective_count, test_added, test_deleted]
