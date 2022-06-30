@@ -7,7 +7,7 @@ import dash_bootstrap_components as dbc
 from dateutil.relativedelta import relativedelta
 from datetime import datetime as dt
 from datetime import date, timedelta
-from homepage import (
+from functions.homepage import (
     homepage_row0,
     homepage_row1,
     homepage_row2,

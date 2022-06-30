@@ -1,6 +1,6 @@
 # importing libraries
 from dash.dependencies import Input, Output
-from devpage import (
+from functions.devpage import (
     devpage_row1,
     devpage_row2,
     devpage_row3,
@@ -10,7 +10,7 @@ from dash import html, dcc
 import pandas as pd
 import dash
 import dash_bootstrap_components as dbc
-from homepage import homepage_row0
+from functions.homepage import homepage_row0
 from datetime import datetime as dt
 from datetime import date, timedelta
 from dateutil.relativedelta import relativedelta

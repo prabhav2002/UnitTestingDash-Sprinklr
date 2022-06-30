@@ -9,6 +9,6 @@ RUN pip install -r /requirements.txt
 ENV ENVIRONMENT_FILE=".env"
 
 COPY ./ ./
-EXPOSE 8090
+EXPOSE 8080
 
 ENTRYPOINT ["gunicorn", "--config", "gunicorn_config.py", "index:server"]

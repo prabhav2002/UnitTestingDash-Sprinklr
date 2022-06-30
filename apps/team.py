@@ -1,10 +1,15 @@
 # importing libraries
 from dash.dependencies import Input, Output
-from teampage import teampage_row1, teampage_row2, teampage_row3, teampage_row4
+from functions.teampage import (
+    teampage_row1,
+    teampage_row2,
+    teampage_row3,
+    teampage_row4,
+)
 from dash import html, dcc
 import dash_bootstrap_components as dbc
 import pandas as pd
-from homepage import homepage_row0
+from functions.homepage import homepage_row0
 import dash
 from datetime import datetime as dt
 from dateutil.relativedelta import relativedelta

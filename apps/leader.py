@@ -8,9 +8,9 @@ from dateutil.relativedelta import relativedelta
 from datetime import datetime as dt
 from dash import dcc, html
 import dash
-from homepage import homepage_row0
-from teampage import teampage_row1
-from leaderboard import leaderboard_row1
+from functions.homepage import homepage_row0
+from functions.teampage import teampage_row1
+from functions.leaderboard import leaderboard_row1
 
 # layout of leaderboard
 def leader_layout():

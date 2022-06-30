@@ -74,6 +74,19 @@ def teampage_row3(timePeriod, teamNamesMultiDropdown, testCaseType, startdate, e
         data = []
         dfTeamNone = pd.DataFrame(data, columns=[])
         fig = go.Figure()
+        fig.update_layout(
+            xaxis={"visible": False},
+            yaxis={"visible": False},
+            annotations=[
+                {
+                    "text": "Select the Team(s) to see the plot!",
+                    "xref": "paper",
+                    "yref": "paper",
+                    "showarrow": False,
+                    "font": {"size": 28},
+                }
+            ],
+        )
         return fig, dfTeamNone.to_json(orient="split")
 
     if type(teamNamesMultiDropdown) == str:
