@@ -1,5 +1,5 @@
 # importing libraries
-from elasticServerDashApp import elasitcServerDashApp
+from functions.elasticServerDashApp import elasitcServerDashApp
 from datetime import datetime as dt
 from datetime import date
 import pandas as pd
@@ -7,12 +7,11 @@ import plotly.express as px
 import plotly.graph_objects as go
 from dateutil.relativedelta import relativedelta
 
-# connecting with elasticsearch server
-es = elasitcServerDashApp()
-
 
 # function get total numbers of team and name of those teams
 def teampage_row1():
+    # connecting with elasticsearch server
+    es = elasitcServerDashApp()
     # aggregation to get all the teams
     query_filter = {
         "size": 0,
@@ -34,6 +33,8 @@ def teampage_row1():
 
 # function to plot pie-chart of team-wise developer count.
 def teampage_row2():
+    # connecting with elasticsearch server
+    es = elasitcServerDashApp()
     teams, teamList = teampage_row1()
     data = []
     # teamwise querying in for loop to get the number of distinct developers of that team
@@ -65,14 +66,18 @@ def teampage_row2():
     return fig
 
 
-# function plot count of testcases vs time for selected teams, get JSONfied data for selected date-range
+# function plot count of testcases vs time for selected teams, get dataframe for selected date-range
 # selection for date-wise, week-wise, month-wise aggregation
 # selection for type of testcases: added, deleted, effective
 def teampage_row3(timePeriod, teamNamesMultiDropdown, testCaseType, startdate, enddate):
-
+    # connecting with elasticsearch server
+    es = elasitcServerDashApp()
     if teamNamesMultiDropdown == []:
         data = []
-        dfTeamNone = pd.DataFrame(data, columns=[])
+        dfTeamNone = pd.DataFrame(
+            data,
+            columns=["Select the Team(s)"],
+        )
         fig = go.Figure()
         fig.update_layout(
             xaxis={"visible": False},
@@ -87,7 +92,7 @@ def teampage_row3(timePeriod, teamNamesMultiDropdown, testCaseType, startdate, e
                 }
             ],
         )
-        return fig, dfTeamNone.to_json(orient="split")
+        return fig, dfTeamNone
 
     if type(teamNamesMultiDropdown) == str:
         teamNamesMultiDropdown = [teamNamesMultiDropdown]
@@ -163,7 +168,7 @@ def teampage_row3(timePeriod, teamNamesMultiDropdown, testCaseType, startdate, e
 
     if dfTeam.shape[0] == 0:
         dataNone = []
-        dfNone = pd.DataFrame(dataNone, columns=[])
+        dfNone = pd.DataFrame(dataNone, columns=["No Data"])
         fig = go.Figure()
         fig.update_layout(
             xaxis={"visible": False},
@@ -178,7 +183,7 @@ def teampage_row3(timePeriod, teamNamesMultiDropdown, testCaseType, startdate, e
                 }
             ],
         )
-        return fig, dfNone.to_json(orient="split")
+        return fig, dfNone
 
     # aggregated date-wise and plotting of data
     if timePeriod == "Daily":
@@ -191,6 +196,7 @@ def teampage_row3(timePeriod, teamNamesMultiDropdown, testCaseType, startdate, e
             height=900,
             width=1100,
         )
+        dfTeam["Date"] = dfTeam["Date"].dt.strftime("%Y-%m-%d")
         # range slider option
         start_date_plus_month = start_date_object + relativedelta(months=1)
         fig.update_xaxes(
@@ -213,7 +219,7 @@ def teampage_row3(timePeriod, teamNamesMultiDropdown, testCaseType, startdate, e
                 ]
             )
         fig.update_yaxes(title=testCaseType)
-        return fig, dfTeam.to_json(orient="split")
+        return fig, dfTeam
 
     # aggregated week-wise and plotting of data
     elif timePeriod == "Weekly":
@@ -229,20 +235,21 @@ def teampage_row3(timePeriod, teamNamesMultiDropdown, testCaseType, startdate, e
             .sum()
             .reset_index()
         )
-        dfWeek["Date"] = dfWeek["Date"].dt.strftime("%W, %Y")
-        dfWeek.rename(columns={"Date": "Week Number of the Year"}, inplace=True)
+        dfWeek["Date"] = dfWeek["Date"] - pd.to_timedelta(6, unit="d")
+        dfWeek["Date"] = dfWeek["Date"].dt.strftime("%Y-%m-%d")
+        dfWeek.rename(columns={"Date": "Start Date of the Week"}, inplace=True)
         fig = px.bar(
             dfWeek,
-            x="Week Number of the Year",
+            x="Start Date of the Week",
             y=testCaseType,
             color="Team",
             title="Team-wise " + testCaseType + " (Weekly)",
             height=900,
             width=1100,
         )
-        fig.update_xaxes(title="Week Number of the Year", rangeslider_visible=True)
+        fig.update_xaxes(title="Start Date of the Week", rangeslider_visible=True)
         fig.update_yaxes(title=testCaseType)
-        return fig, dfWeek.to_json(orient="split")
+        return fig, dfWeek
 
     # aggregated month-wise and plotting of data
     else:
@@ -258,7 +265,7 @@ def teampage_row3(timePeriod, teamNamesMultiDropdown, testCaseType, startdate, e
             .sum()
             .reset_index()
         )
-        dfMonth["Date"] = dfMonth["Date"].dt.strftime("%b, %Y")
+        dfMonth["Date"] = dfMonth["Date"].dt.strftime("%Y, %m (%b)")
         dfMonth.rename(columns={"Date": "Month"}, inplace=True)
         fig = px.bar(
             dfMonth,
@@ -271,12 +278,13 @@ def teampage_row3(timePeriod, teamNamesMultiDropdown, testCaseType, startdate, e
         )
         fig.update_xaxes(title="Month", rangeslider_visible=True)
         fig.update_yaxes(title=testCaseType)
-        return fig, dfMonth.to_json(orient="split")
+        return fig, dfMonth
 
 
-# plot the stats of developers and get JSONfied data of the selected team in selected date range
+# plot the stats of developers and get dataframe of the selected team in selected date range
 def teampage_row4(team, testCaseType, startdate, enddate):
-
+    # connecting with elasticsearch server
+    es = elasitcServerDashApp()
     # converting startdate, enddate to timestamp
     start_date_object = date.fromisoformat(startdate)
     end_date_object = date.fromisoformat(enddate)
@@ -353,7 +361,7 @@ def teampage_row4(team, testCaseType, startdate, enddate):
                 }
             ],
         )
-        return fig, df.to_json(orient="split")
+        return fig, df
 
     # plot
     fig = px.bar(
@@ -364,4 +372,8 @@ def teampage_row4(team, testCaseType, startdate, enddate):
         height=900,
         width=1100,
     )
-    return fig, df.to_json(orient="split")
+    if testCaseType == "Test Cases Added":
+        fig.update_traces(marker_color="#00CC96")
+    elif testCaseType == "Test Cases Deleted":
+        fig.update_traces(marker_color="#EF553B")
+    return fig, df

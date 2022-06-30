@@ -1,8 +1,7 @@
 # importing libraries
 from dash.dependencies import Input, Output
-from dash import html, dcc
+from dash import html, dcc, dash_table
 import dash
-import pandas as pd
 import dash_bootstrap_components as dbc
 from dateutil.relativedelta import relativedelta
 from datetime import datetime as dt
@@ -37,7 +36,7 @@ def home_layout():
                                     "Welcome to Sprinklr Unit-Testing Dashboard",
                                     className="text-center",
                                 ),
-                                className="mb-5 mt-5",
+                                className="mt-5",
                             )
                         ]
                     ),
@@ -47,7 +46,7 @@ def home_layout():
                                 html.H5(
                                     children="The Dashboard is divided into 4 pages. "
                                 ),
-                                className="text-center mt-5 mb-5",
+                                className="text-center mt-4 mb-4",
                             )
                         ]
                     ),
@@ -134,7 +133,7 @@ def home_layout():
                                 className="mb-4",
                             ),
                         ],
-                        className="mb-5",
+                        className="mb-4",
                     ),
                     dbc.Row(
                         [
@@ -156,7 +155,7 @@ def home_layout():
                         [
                             dbc.Col(
                                 html.H6(
-                                    children="2. Data of the plot can be downloaded as Excel from the button given below the plot."
+                                    children="2. Data of the plot can be downloaded as Excel from the button given above the data table."
                                 ),
                             )
                         ]
@@ -169,7 +168,7 @@ def home_layout():
                                 ),
                             )
                         ],
-                        className="mb-5",
+                        className="mb-3",
                     ),
                     dbc.Row(
                         [
@@ -216,7 +215,7 @@ def home_layout():
                                 className="mb-4",
                             ),
                         ],
-                        className="mb-5",
+                        className="mb-4",
                     ),
                     # title of the page
                     dbc.Row(
@@ -226,7 +225,7 @@ def home_layout():
                                     "Overall Unit Testing Analytics",
                                     className="text-center",
                                 ),
-                                className="mb-5 mt-5",
+                                className="mb-5",
                             )
                         ]
                     ),
@@ -270,91 +269,7 @@ def home_layout():
                                 className="mb-4",
                             ),
                         ],
-                        className="mb-5",
-                    ),
-                    dbc.Row(
-                        [
-                            dbc.Col(
-                                html.H4(
-                                    "Select a date range to get the stats of that specific time-period",
-                                    className="text-center",
-                                ),
-                                className="mb-5 mt-5",
-                            )
-                        ]
-                    ),
-                    # date range picker to filter the data using date-range.
-                    dbc.Row(
-                        [
-                            dbc.Col(dbc.Card()),
-                            dbc.Col(
-                                dbc.Card(
-                                    children=[
-                                        dcc.DatePickerRange(
-                                            id="home-date-picker-range",
-                                            min_date_allowed=date(
-                                                min_datem.year,
-                                                min_datem.month,
-                                                min_datem.day,
-                                            ),
-                                            max_date_allowed=date(
-                                                max_datem.year,
-                                                max_datem.month,
-                                                max_datem.day,
-                                            ),
-                                            display_format="DD-MM-YYYY",
-                                            initial_visible_month=date(
-                                                max_datem.year,
-                                                max_datem.month,
-                                                max_datem.day,
-                                            ),
-                                            start_date=date(
-                                                min_datem.year,
-                                                min_datem.month,
-                                                min_datem.day,
-                                            ),
-                                            end_date=date(
-                                                max_datem.year,
-                                                max_datem.month,
-                                                max_datem.day,
-                                            ),
-                                        ),
-                                    ],
-                                    body=True,
-                                    color="primary",
-                                    outline=False,
-                                ),
-                                className="text-center",
-                            ),
-                            dbc.Col(dbc.Card()),
-                        ],
-                        className="mb-2",
-                    ),
-                    dbc.Row(
-                        [
-                            dbc.Col(dbc.Card()),
-                            dbc.Col(
-                                dbc.ButtonGroup(
-                                    [
-                                        dbc.Button(
-                                            "Last 7 Days",
-                                            outline=True,
-                                            color="primary",
-                                            id="homedate-btn1",
-                                        ),
-                                        dbc.Button(
-                                            "Last Month",
-                                            outline=True,
-                                            color="primary",
-                                            id="homedate-btn2",
-                                        ),
-                                    ]
-                                ),
-                                className="text-center",
-                            ),
-                            dbc.Col(dbc.Card()),
-                        ],
-                        className="mb-4 flex center",
+                        className="mb-4",
                     ),
                     # test cases stats in the given date range
                     dbc.Row(
@@ -441,32 +356,11 @@ def home_layout():
                         id="timePeriod-dropdown",
                     ),
                     dcc.Graph(id="overall_analytics"),
-                    dcc.Store(id="overall_analytics_df"),
-                    dbc.Row(
-                        [
-                            dbc.Col(
-                                dbc.Card(
-                                    children=[
-                                        html.H4(
-                                            children="Overall Unit Testing Analytics as per the above filter",
-                                            className="text-center",
-                                        ),
-                                        dbc.Button(
-                                            "Download as Excel",
-                                            id="overall_button_xlsx",
-                                            color="primary",
-                                            className="mt-3",
-                                        ),
-                                    ],
-                                    body=True,
-                                    color="dark",
-                                    outline=True,
-                                ),
-                                className="mb-4 mt-4",
-                            ),
-                        ]
+                    # data table
+                    dbc.Table(
+                        id="homepage-table",
+                        bordered=True,
                     ),
-                    dcc.Download(id="overall_analytics_download_xlsx"),
                     html.A(
                         "Created by Prabhav Shah",
                         href="https://www.linkedin.com/in/prabhav-shah-7723281a0",
@@ -483,110 +377,45 @@ layout = home_layout()
     Output("totalAddedHome", "children"),
     Output("totalDeletedHome", "children"),
     Output("totalEffectiveHome", "children"),
-    Input("home-date-picker-range", "start_date"),
-    Input("home-date-picker-range", "end_date"),
+    Input("index-date-picker-range", "start_date"),
+    Input("index-date-picker-range", "end_date"),
 )
 def get_testcase_stats(startdate, enddate):
     totalAdded, totalDeleted, totalEffective = homepage_row1(startdate, enddate)
     return str(int(totalAdded)), str(int(totalDeleted)), str(int(totalEffective))
 
 
-# callback to plot a graph of overall analytics
+# callback to get the plot and the data table of overall unit testing analytics for the given DateRange
 @app.callback(
     Output("overall_analytics", "figure"),
-    Output("overall_analytics_df", "data"),
+    Output("homepage-table", "children"),
     Input("timePeriod-dropdown", "value"),
-    Input("home-date-picker-range", "start_date"),
-    Input("home-date-picker-range", "end_date"),
+    Input("index-date-picker-range", "start_date"),
+    Input("index-date-picker-range", "end_date"),
 )
-def get_figure_homepage(value, startdate, enddate):
-    global dfjson_overall
-    fig, dfjson_overall = homepage_row3(value, startdate, enddate)
-    return fig, dfjson_overall
-
-
-# callback to get the above file downloaded as excel on clicking the button
-@app.callback(
-    Output("overall_analytics_download_xlsx", "data"),
-    Input("overall_button_xlsx", "n_clicks"),
-    prevent_initial_call=True,
-)
-def donwload_overall(n_clicks):
-    dfOverAll = pd.read_json(dfjson_overall, orient="split")
-    return dcc.send_data_frame(
-        dfOverAll.to_excel, filename="overall_analytics_download.xlsx"
+def get_fig_table_homepage(value, startdate, enddate):
+    fig, df_home = homepage_row3(value, startdate, enddate)
+    return fig, dash_table.DataTable(
+        columns=[{"name": i, "id": i} for i in df_home.columns],
+        data=df_home.to_dict("records"),
+        editable=True,
+        sort_action="native",
+        sort_mode="single",
+        selected_rows=[],
+        page_action="native",
+        page_current=0,
+        page_size=10,
+        export_format="xlsx",
+        style_cell={"padding": "5px", "textAlign": "left"},
+        style_header={
+            "backgroundColor": "#037bff",
+            "fontWeight": "bold",
+            "color": "#eef5ff",
+        },
+        style_data_conditional=[
+            {
+                "if": {"row_index": "odd"},
+                "backgroundColor": "#eef5ff",
+            },
+        ],
     )
-
-
-# callback to get date range
-@app.callback(
-    Output("home-date-picker-range", "start_date"),
-    Output("home-date-picker-range", "end_date"),
-    Input("homedate-btn1", "n_clicks"),
-    Input("homedate-btn2", "n_clicks"),
-    prevent_initial_call=True,
-)
-def set_date_range_buttons(n_clicks_1, n_clicks_2):
-    # getting minimum and maximum date in provided data using homepage function
-    min_date_i, max_date_i = homepage_row0()
-    ctx = dash.callback_context
-    clicked_id = ctx.triggered[0]["prop_id"].split(".")[0]
-    if clicked_id == "homedate-btn1":
-        min_date = min_date_i
-        max_date = max_date_i
-        max_date_minus = max_date - relativedelta(days=6)
-        min_date = max(min_date, max_date_minus)
-        min_datem = dt.strptime(str(min_date), "%Y-%m-%d %H:%M:%S")
-        max_datem = dt.strptime(str(max_date), "%Y-%m-%d %H:%M:%S")
-        return (
-            date(
-                min_datem.year,
-                min_datem.month,
-                min_datem.day,
-            ),
-            date(
-                max_datem.year,
-                max_datem.month,
-                max_datem.day,
-            ),
-        )
-    elif clicked_id == "homedate-btn2":
-        min_date = min_date_i
-        max_date = max_date_i
-        last_day_of_prev_month = max_date.replace(day=1) - timedelta(days=1)
-        start_day_of_prev_month = max_date.replace(day=1) - timedelta(
-            days=last_day_of_prev_month.day
-        )
-        min_date = max(min_date, start_day_of_prev_month)
-        max_date = min(max_date, last_day_of_prev_month)
-        min_datem = dt.strptime(str(min_date), "%Y-%m-%d %H:%M:%S")
-        max_datem = dt.strptime(str(max_date), "%Y-%m-%d %H:%M:%S")
-        return (
-            date(
-                min_datem.year,
-                min_datem.month,
-                min_datem.day,
-            ),
-            date(
-                max_datem.year,
-                max_datem.month,
-                max_datem.day,
-            ),
-        )
-    else:
-        min_date = min_date_i
-        max_date = max_date_i
-        min_datem = dt.strptime(str(min_date), "%Y-%m-%d %H:%M:%S")
-        max_datem = dt.strptime(str(max_date), "%Y-%m-%d %H:%M:%S")
-        return (
-            date(
-                min_datem.year,
-                min_datem.month,
-                min_datem.day,
-            ),
-            date(
-                max_datem.year,
-                max_datem.month,
-                max_datem.day,
-            ),
-        )

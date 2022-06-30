@@ -12,4 +12,5 @@ def elasitcServerDashApp():
         use_ssl=False,
         retry_on_timeout=True,
     )
+    es.indices.refresh(index="unit_test_tracker")
     return es

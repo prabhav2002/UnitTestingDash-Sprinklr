@@ -1,0 +1,43 @@
+From 52d900b28c13c6f135ca4d50b6cd9979575e56c6 Mon Sep 17 00:00:00 2001
+From: Prabhav Shah <201901216@daiict.ac.in>
+Date: Thu, 30 Jun 2022 13:40:10 +0530
+Subject: [PATCH] commit on 'main'
+
+commit on 'main'
+
+commit on 'main'
+---
+ Jenkinsfile | 10 +++++-----
+ 1 file changed, 5 insertions(+), 5 deletions(-)
+
+diff --git a/Jenkinsfile b/Jenkinsfile
+index 4891cbe..b92586e 100644
+--- a/Jenkinsfile
++++ b/Jenkinsfile
+@@ -1,17 +1,17 @@
+ pipeline {
+   agent any
+   stages {
+-    stage('Start container') {
++    stage('DockerCompose') {
+       steps {
+-        sh 'docker compose up -d --no-color --wait'
+-        sh 'docker compose ps'
++        sh "docker-compose build"
++        sh "docker-compose up -d"
+       }
+     }
+   }
+   post {
+     always {
+-      sh 'docker compose down --remove-orphans -v'
+-      sh 'docker compose ps'
++      sh 'docker-compose down --remove-orphans -v'
++      sh 'docker-compose ps'
+     }
+   }
+ }
+\ No newline at end of file
+-- 
+2.36.1
+

@@ -1,5 +1,5 @@
 # importing libraries
-from elasticServerDashApp import elasitcServerDashApp
+from functions.elasticServerDashApp import elasitcServerDashApp
 from datetime import datetime as dt
 import pandas as pd
 import plotly.express as px
@@ -7,11 +7,10 @@ from datetime import date
 import plotly.graph_objects as go
 from dateutil.relativedelta import relativedelta
 
-# connecting with elasticsearch server
-es = elasitcServerDashApp()
-
 # function to get minimum and maximum date of the available data
 def homepage_row0():
+    # connecting with elasticsearch server
+    es = elasitcServerDashApp()
     # taking minimum and maximum from "fromTime" column consisting of timestamp as aggregation
     query_filter = {
         "size": 0,
@@ -34,7 +33,8 @@ def homepage_row0():
 
 # function to get total testcases added, total testcases deleted and total effective testcases in the given date range
 def homepage_row1(startdate, enddate):
-
+    # connecting with elasticsearch server
+    es = elasitcServerDashApp()
     # converting startdate, enddate to timestamp
     start_date_object = date.fromisoformat(startdate)
     end_date_object = date.fromisoformat(enddate)
@@ -68,7 +68,8 @@ def homepage_row1(startdate, enddate):
 
 # function to get count of unique teams and unique developers in the provided data
 def homepage_row2():
-
+    # connecting with elasticsearch server
+    es = elasitcServerDashApp()
     # counting distinct number of teams and devs using cardinality as aggregation method
     query_filter = {
         "size": 0,
@@ -86,10 +87,11 @@ def homepage_row2():
 
 
 # function to plot overall data analytics
-# and get JSONfied dataframe of overall analytics
+# and get dataframe of overall analytics
 # with the feature of date-wise, week-wise, month-wise aggregation
 def homepage_row3(timePeriod, startdate, enddate):
-
+    # connecting with elasticsearch server
+    es = elasitcServerDashApp()
     # converting startdate, enddate to timestamp
     start_date_object = date.fromisoformat(startdate)
     end_date_object = date.fromisoformat(enddate)
@@ -136,17 +138,11 @@ def homepage_row3(timePeriod, startdate, enddate):
         date_time = dt.fromtimestamp(int(timestamp) / 1000)
         data.append([date_time, effective_count, test_added, test_deleted])
 
-    # creating dataframe
-    df = pd.DataFrame(
-        data,
-        columns=["Date", "TotalEffectiveTests", "TotalTestsAdded", "TotalTestsDeleted"],
-    )
-
-    if df.shape[0] == 0:
+    if len(data) == 0:
         dataNone = []
-        dfNone = pd.DataFrame(dataNone, columns=[])
-        fig = go.Figure()
-        fig.update_layout(
+        dfNone = pd.DataFrame(dataNone, columns=["No Data"])
+        plot = go.Figure()
+        plot.update_layout(
             xaxis={"visible": False},
             yaxis={"visible": False},
             annotations=[
@@ -159,77 +155,30 @@ def homepage_row3(timePeriod, startdate, enddate):
                 }
             ],
         )
-        return fig, dfNone.to_json(orient="split")
+        return plot, dfNone
 
-    # converting dataframe for weekly stats and plotting of dataframe
-    if timePeriod == "Weekly":
-        dfWeek = df.copy()
-        dfWeek = (
-            dfWeek.groupby([pd.Grouper(key="Date", freq="W-SUN")])[
-                ["TotalEffectiveTests", "TotalTestsAdded", "TotalTestsDeleted"]
-            ]
-            .sum()
-            .reset_index()
-            .sort_values("Date")
-        )
-        dfWeek["Date"] = dfWeek["Date"].dt.strftime("%W, %Y")
-        plot = px.bar(
-            dfWeek,
-            x="Date",
-            y=df.columns,
-            labels={"Date": "Week Number of the Year"},
-            title="Unit Testing Analytics (Weekly)",
-            height=700,
-        )
-        plot.update_xaxes(title="Week Number of the Year", rangeslider_visible=True)
-        plot.update_yaxes(title="Test Cases Count")
-        plot.update_layout(
-            legend=dict(
-                title="<b>Click here to<br>activate/deactivate<br>specific Test Case<br>Count Type<b>"
-            )
-        )
-        dfWeek.rename(columns={"Date": "Week Number of the Year"}, inplace=True)
-        return plot, dfWeek.to_json(orient="split")
-
-    # converting dataframe for monthly stats and plotting of dataframe
-    elif timePeriod == "Monthly":
-        dfMonth = df.copy()
-        dfMonth = (
-            dfMonth.groupby([pd.Grouper(key="Date", freq="1M")])[
-                ["TotalEffectiveTests", "TotalTestsAdded", "TotalTestsDeleted"]
-            ]
-            .sum()
-            .reset_index()
-            .sort_values("Date")
-        )
-        dfMonth["Date"] = dfMonth["Date"].dt.strftime("%b, %Y")
-        plot = px.bar(
-            dfMonth,
-            x="Date",
-            y=df.columns,
-            title="Unit Testing Analytics (Monthly)",
-            labels={"Date": "Month"},
-            height=700,
-        )
-        plot.update_xaxes(title="Months", rangeslider_visible=True)
-        plot.update_yaxes(title="Test Cases Count")
-        plot.update_layout(
-            legend=dict(
-                title="<b>Click here to<br>activate/deactivate<br>specific Test Case<br>Count Type<b>"
-            )
-        )
-        dfMonth.rename(columns={"Date": "Month"}, inplace=True)
-        return plot, dfMonth.to_json(orient="split")
+    # creating dataframe
+    dfHome = pd.DataFrame(
+        data,
+        columns=[
+            "Date",
+            "Effective Test Cases",
+            "Test Cases Added",
+            "Test Cases Deleted",
+        ],
+    )
 
     # plotting daily stats
-    else:
+    if timePeriod == "Daily":
         plot = px.bar(
-            df,
+            dfHome,
             x="Date",
-            y=df.columns,
+            y=dfHome.columns,
+            color_discrete_sequence=["#636EFA", "#00CC96", "#EF553B"],
             title="Unit Testing Analytics (Daily)",
             height=700,
         )
+        dfHome["Date"] = dfHome["Date"].dt.strftime("%Y-%m-%d")
         start_date_plus_month = start_date_object + relativedelta(months=1)
         plot.update_xaxes(
             rangeslider_visible=True,
@@ -244,7 +193,7 @@ def homepage_row3(timePeriod, startdate, enddate):
             ),
         )
         plot.update_yaxes(title="Test Cases Count")
-        if df.shape[0] > 1:
+        if dfHome.shape[0] > 1:
             plot.update_xaxes(
                 range=[start_date_object, min(start_date_plus_month, end_date_object)],
             )
@@ -253,4 +202,65 @@ def homepage_row3(timePeriod, startdate, enddate):
                 title="<b>Click here to<br>activate/deactivate<br>specific Test Case<br>Count Type<b>"
             )
         )
-        return plot, df.to_json(orient="split")
+        return plot, dfHome
+
+    # converting dataframe for weekly stats and plotting of dataframe
+    elif timePeriod == "Weekly":
+        dfWeek = dfHome.copy()
+        dfWeek = (
+            dfWeek.groupby([pd.Grouper(key="Date", freq="W-SUN")])[
+                ["Effective Test Cases", "Test Cases Added", "Test Cases Deleted"]
+            ]
+            .sum()
+            .reset_index()
+            .sort_values("Date")
+        )
+        dfWeek["Date"] = dfWeek["Date"] - pd.to_timedelta(6, unit="d")
+        dfWeek["Date"] = dfWeek["Date"].dt.strftime("%Y-%m-%d")
+        plot = px.bar(
+            dfWeek,
+            x="Date",
+            y=dfWeek.columns,
+            labels={"Date": "Start Date of the Week"},
+            title="Unit Testing Analytics (Weekly)",
+            height=700,
+        )
+        plot.update_xaxes(title="Start Date of the Week", rangeslider_visible=True)
+        plot.update_yaxes(title="Test Cases Count")
+        plot.update_layout(
+            legend=dict(
+                title="<b>Click here to<br>activate/deactivate<br>specific Test Case<br>Count Type<b>"
+            )
+        )
+        dfWeek.rename(columns={"Date": "Start Date of the Week"}, inplace=True)
+        return plot, dfWeek
+
+    # converting dataframe for monthly stats and plotting of dataframe
+    elif timePeriod == "Monthly":
+        dfMonth = dfHome.copy()
+        dfMonth = (
+            dfMonth.groupby([pd.Grouper(key="Date", freq="1M")])[
+                ["Effective Test Cases", "Test Cases Added", "Test Cases Deleted"]
+            ]
+            .sum()
+            .reset_index()
+            .sort_values("Date")
+        )
+        dfMonth["Date"] = dfMonth["Date"].dt.strftime("%Y, %m (%b)")
+        plot = px.bar(
+            dfMonth,
+            x="Date",
+            y=dfMonth.columns,
+            title="Unit Testing Analytics (Monthly)",
+            labels={"Date": "Month"},
+            height=700,
+        )
+        plot.update_xaxes(title="Months", rangeslider_visible=True)
+        plot.update_yaxes(title="Test Cases Count")
+        plot.update_layout(
+            legend=dict(
+                title="<b>Click here to<br>activate/deactivate<br>specific Test Case<br>Count Type<b>"
+            )
+        )
+        dfMonth.rename(columns={"Date": "Month"}, inplace=True)
+        return plot, dfMonth

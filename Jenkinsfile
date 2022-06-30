@@ -1,17 +1,17 @@
 pipeline {
   agent any
   stages {
-    stage('Start container') {
+    stage('DockerCompose') {
       steps {
-        sh 'docker compose up -d --no-color --wait'
-        sh 'docker compose ps'
+        sh "docker-compose build"
+        sh "docker-compose up -d"
       }
     }
   }
   post {
     always {
-      sh 'docker compose down --remove-orphans -v'
-      sh 'docker compose ps'
+      sh 'docker-compose down --remove-orphans -v'
+      sh 'docker-compose ps'
     }
   }
 }

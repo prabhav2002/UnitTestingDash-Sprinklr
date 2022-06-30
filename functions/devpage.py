@@ -1,18 +1,16 @@
 # importing libraries
-from elasticServerDashApp import elasitcServerDashApp
+from functions.elasticServerDashApp import elasitcServerDashApp
 from datetime import datetime as dt
 import pandas as pd
 import plotly.express as px
 import plotly.graph_objects as go
 from datetime import date
 from dateutil.relativedelta import relativedelta
-import sys
-
-# connecting with elasticsearch server
-es = elasitcServerDashApp()
 
 # function get list of all developers in the provided data
 def devpage_row1():
+    # connecting with elasticsearch server
+    es = elasitcServerDashApp()
     # aggregation to get all developers
     query_filter = {
         "size": 0,
@@ -31,6 +29,8 @@ def devpage_row1():
 
 # function to get team-name of developer, get total testcases added, deleted, effective in the selected date-range
 def devpage_row2(givenEmailID, startdate, enddate):
+    # connecting with elasticsearch server
+    es = elasitcServerDashApp()
     if givenEmailID == None:
         return "Enter the Sprinklr Mail ID above to see the team...", 0, 0, 0
     else:
@@ -107,13 +107,15 @@ def devpage_row2(givenEmailID, startdate, enddate):
 
 
 # function plot count of testcases vs time for selected developer for selected date-range
-# and get JSONfied data as output
+# and get dataframe as output
 # selection for daily, weekly, monthly aggregation
 # selection for type of testcases: added, deleted, effective
 def devpage_row3(timePeriod, testCaseType, givenEmailID, startdate, enddate):
+    # connecting with elasticsearch server
+    es = elasitcServerDashApp()
     if givenEmailID == None:
         data = []
-        dfDevNone = pd.DataFrame(data, columns=[])
+        dfDevNone = pd.DataFrame(data, columns=["Select the Mail ID"])
         fig = go.Figure()
         fig.update_layout(
             xaxis={"visible": False},
@@ -128,7 +130,7 @@ def devpage_row3(timePeriod, testCaseType, givenEmailID, startdate, enddate):
                 }
             ],
         )
-        return fig, dfDevNone.to_json(orient="split")
+        return fig, dfDevNone
     else:
 
         # converting startdate, enddate to timestamp
@@ -196,7 +198,7 @@ def devpage_row3(timePeriod, testCaseType, givenEmailID, startdate, enddate):
 
         if dfDev.shape[0] == 0:
             dataNone = []
-            dfNone = pd.DataFrame(dataNone, columns=[])
+            dfNone = pd.DataFrame(dataNone, columns=["No Data"])
             fig = go.Figure()
             fig.update_layout(
                 xaxis={"visible": False},
@@ -211,7 +213,7 @@ def devpage_row3(timePeriod, testCaseType, givenEmailID, startdate, enddate):
                     }
                 ],
             )
-            return fig, dfNone.to_json(orient="split")
+            return fig, dfNone
 
         # aggregated date-wise and plotting of data
         if timePeriod == "Daily":
@@ -223,6 +225,11 @@ def devpage_row3(timePeriod, testCaseType, givenEmailID, startdate, enddate):
                 height=900,
                 width=1100,
             )
+            if testCaseType == "Test Cases Added":
+                fig.update_traces(marker_color="#00CC96")
+            elif testCaseType == "Test Cases Deleted":
+                fig.update_traces(marker_color="#EF553B")
+            dfDev["Date"] = dfDev["Date"].dt.strftime("%Y-%m-%d")
             start_date_plus_fourmonths = start_date_object + relativedelta(months=4)
             fig.update_xaxes(
                 rangeslider_visible=True,
@@ -247,7 +254,7 @@ def devpage_row3(timePeriod, testCaseType, givenEmailID, startdate, enddate):
                     ]
                 )
             fig.update_yaxes(title=testCaseType)
-            return fig, dfDev.to_json(orient="split")
+            return fig, dfDev
 
         # aggregated week-wise and plotting of data
         elif timePeriod == "Weekly":
@@ -264,19 +271,24 @@ def devpage_row3(timePeriod, testCaseType, givenEmailID, startdate, enddate):
                 .reset_index()
                 .sort_values("Date")
             )
-            dfWeek["Date"] = dfWeek["Date"].dt.strftime("%W, %Y")
-            dfWeek.rename(columns={"Date": "Week Number of the Year"}, inplace=True)
+            dfWeek["Date"] = dfWeek["Date"] - pd.to_timedelta(6, unit="d")
+            dfWeek["Date"] = dfWeek["Date"].dt.strftime("%Y-%m-%d")
+            dfWeek.rename(columns={"Date": "Start Date of the Week"}, inplace=True)
             fig = px.bar(
                 dfWeek,
-                x="Week Number of the Year",
+                x="Start Date of the Week",
                 y=testCaseType,
                 title=testCaseType + " by " + givenEmailID + " (Weekly)",
                 height=900,
                 width=1100,
             )
-            fig.update_xaxes(title="Week Number of the Year", rangeslider_visible=True)
+            if testCaseType == "Test Cases Added":
+                fig.update_traces(marker_color="#00CC96")
+            elif testCaseType == "Test Cases Deleted":
+                fig.update_traces(marker_color="#EF553B")
+            fig.update_xaxes(title="Start Date of the Week", rangeslider_visible=True)
             fig.update_yaxes(title=testCaseType)
-            return fig, dfWeek.to_json(orient="split")
+            return fig, dfWeek
 
         # aggregated month-wise and plotting of data
         else:
@@ -293,7 +305,7 @@ def devpage_row3(timePeriod, testCaseType, givenEmailID, startdate, enddate):
                 .reset_index()
                 .sort_values("Date")
             )
-            dfMonth["Date"] = dfMonth["Date"].dt.strftime("%b, %Y")
+            dfMonth["Date"] = dfMonth["Date"].dt.strftime("%Y, %m (%b)")
             dfMonth.rename(columns={"Date": "Month"}, inplace=True)
             fig = px.bar(
                 dfMonth,
@@ -303,14 +315,20 @@ def devpage_row3(timePeriod, testCaseType, givenEmailID, startdate, enddate):
                 height=900,
                 width=1100,
             )
+            if testCaseType == "Test Cases Added":
+                fig.update_traces(marker_color="#00CC96")
+            elif testCaseType == "Test Cases Deleted":
+                fig.update_traces(marker_color="#EF553B")
             fig.update_xaxes(title="Month", rangeslider_visible=True)
             fig.update_yaxes(title=testCaseType)
-            return fig, dfMonth.to_json(orient="split")
+            return fig, dfMonth
 
 
 # function to plot comparison between two developers for given date-range
 # selection for testcase type: added, deleted, effective
 def devpage_row4(givenEmailID1, givenEmailID2, testCaseType, startdate, enddate):
+    # connecting with elasticsearch server
+    es = elasitcServerDashApp()
     if givenEmailID1 == None:
         fig = go.Figure()
         fig.update_layout(

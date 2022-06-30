@@ -1,0 +1,16 @@
+.export {
+    border-radius: 5px;
+    border: 2px solid #037bff;
+    padding: 0 15px;
+    width: 130px;
+    height: 40px;
+    font-weight: bold;
+    background-color: #eef5ff;
+    color: #037bff;
+}
+
+.export:hover {
+    border: 2px solid #eef5ff;
+    background-color: #037bff;
+    color: #eef5ff;
+}
