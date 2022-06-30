@@ -1,0 +1,256 @@
+From 9d49eabb8900630360442eeac2096fabcf24c272 Mon Sep 17 00:00:00 2001
+From: Prabhav Shah <57176222+prabhav2002@users.noreply.github.com>
+Date: Thu, 30 Jun 2022 11:20:57 +0530
+Subject: [PATCH] Squashed Commit
+
+Add files via upload
+
+Add files via upload
+
+Delete homepage.py
+
+Delete teampage.py
+
+Delete devpage.py
+
+Delete leaderboard.py
+
+Add files via upload
+
+Add files via upload
+
+Add files via upload
+
+Add files via upload
+
+Add files via upload
+
+Update .env
+
+Add files via upload
+---
+ Dockerfile                                 |  2 +-
+ IP.txt                                     |  3 ++-
+ Jenkinsfile                                |  2 +-
+ apps/dev.py                                |  4 ++--
+ apps/home.py                               |  2 +-
+ apps/leader.py                             |  6 +++---
+ apps/team.py                               |  9 +++++++--
+ docker-compose.yml                         |  2 +-
+ elasticServerDashApp.py                    |  4 ++--
+ environment/.env                           |  6 +++---
+ devpage.py => functions/devpage.py         |  0
+ homepage.py => functions/homepage.py       |  0
+ leaderboard.py => functions/leaderboard.py |  0
+ teampage.py => functions/teampage.py       | 13 +++++++++++++
+ gunicorn_config.py                         |  2 +-
+ myfile.txt                                 |  0
+ 16 files changed, 37 insertions(+), 18 deletions(-)
+ rename devpage.py => functions/devpage.py (100%)
+ rename homepage.py => functions/homepage.py (100%)
+ rename leaderboard.py => functions/leaderboard.py (100%)
+ rename teampage.py => functions/teampage.py (96%)
+ delete mode 100644 myfile.txt
+
+diff --git a/Dockerfile b/Dockerfile
+index f989635..6a607f2 100644
+--- a/Dockerfile
++++ b/Dockerfile
+@@ -9,6 +9,6 @@ RUN pip install -r /requirements.txt
+ ENV ENVIRONMENT_FILE=".env"
+ 
+ COPY ./ ./
+-EXPOSE 8090
++EXPOSE 8080
+ 
+ ENTRYPOINT ["gunicorn", "--config", "gunicorn_config.py", "index:server"]
+\ No newline at end of file
+diff --git a/IP.txt b/IP.txt
+index 0cf6ca4..025ae8f 100644
+--- a/IP.txt
++++ b/IP.txt
+@@ -1 +1,2 @@
+-host.docker.internal
+\ No newline at end of file
++host.docker.internal
++9200
+\ No newline at end of file
+diff --git a/Jenkinsfile b/Jenkinsfile
+index 8de52d8..4891cbe 100644
+--- a/Jenkinsfile
++++ b/Jenkinsfile
+@@ -14,4 +14,4 @@ pipeline {
+       sh 'docker compose ps'
+     }
+   }
+-}
++}
+\ No newline at end of file
+diff --git a/apps/dev.py b/apps/dev.py
+index 837e4cf..023264a 100644
+--- a/apps/dev.py
++++ b/apps/dev.py
+@@ -1,6 +1,6 @@
+ # importing libraries
+ from dash.dependencies import Input, Output
+-from devpage import (
++from functions.devpage import (
+     devpage_row1,
+     devpage_row2,
+     devpage_row3,
+@@ -10,7 +10,7 @@ from dash import html, dcc
+ import pandas as pd
+ import dash
+ import dash_bootstrap_components as dbc
+-from homepage import homepage_row0
++from functions.homepage import homepage_row0
+ from datetime import datetime as dt
+ from datetime import date, timedelta
+ from dateutil.relativedelta import relativedelta
+diff --git a/apps/home.py b/apps/home.py
+index de55817..b645555 100644
+--- a/apps/home.py
++++ b/apps/home.py
+@@ -7,7 +7,7 @@ import dash_bootstrap_components as dbc
+ from dateutil.relativedelta import relativedelta
+ from datetime import datetime as dt
+ from datetime import date, timedelta
+-from homepage import (
++from functions.homepage import (
+     homepage_row0,
+     homepage_row1,
+     homepage_row2,
+diff --git a/apps/leader.py b/apps/leader.py
+index 88b4fee..a048aab 100644
+--- a/apps/leader.py
++++ b/apps/leader.py
+@@ -8,9 +8,9 @@ from dateutil.relativedelta import relativedelta
+ from datetime import datetime as dt
+ from dash import dcc, html
+ import dash
+-from homepage import homepage_row0
+-from teampage import teampage_row1
+-from leaderboard import leaderboard_row1
++from functions.homepage import homepage_row0
++from functions.teampage import teampage_row1
++from functions.leaderboard import leaderboard_row1
+ 
+ # layout of leaderboard
+ def leader_layout():
+diff --git a/apps/team.py b/apps/team.py
+index 9836db6..382a2fd 100644
+--- a/apps/team.py
++++ b/apps/team.py
+@@ -1,10 +1,15 @@
+ # importing libraries
+ from dash.dependencies import Input, Output
+-from teampage import teampage_row1, teampage_row2, teampage_row3, teampage_row4
++from functions.teampage import (
++    teampage_row1,
++    teampage_row2,
++    teampage_row3,
++    teampage_row4,
++)
+ from dash import html, dcc
+ import dash_bootstrap_components as dbc
+ import pandas as pd
+-from homepage import homepage_row0
++from functions.homepage import homepage_row0
+ import dash
+ from datetime import datetime as dt
+ from dateutil.relativedelta import relativedelta
+diff --git a/docker-compose.yml b/docker-compose.yml
+index bee9deb..d864681 100644
+--- a/docker-compose.yml
++++ b/docker-compose.yml
+@@ -7,6 +7,6 @@ services:
+     image: unit-testing-dash:1.0.0
+     container_name: unit-testing-dash
+     ports:
+-      - "8089:8090"
++      - "8080:8080"
+     environment:
+       - TARGET=LIVE
+diff --git a/elasticServerDashApp.py b/elasticServerDashApp.py
+index e8d8d43..d6c9b27 100644
+--- a/elasticServerDashApp.py
++++ b/elasticServerDashApp.py
+@@ -5,9 +5,9 @@ from elasticsearch import Elasticsearch
+ def elasitcServerDashApp():
+     lines = []
+     with open("IP.txt") as f:
+-        lines = f.readlines()
++        lines = f.read().splitlines()
+     es = Elasticsearch(
+-        hosts=[{"host": lines[0]}],
++        hosts=[{"host": lines[0], "port": int(lines[1])}],
+         refresh=True,
+         use_ssl=False,
+         retry_on_timeout=True,
+diff --git a/environment/.env b/environment/.env
+index e7d7436..95bf978 100644
+--- a/environment/.env
++++ b/environment/.env
+@@ -1,4 +1,4 @@
+ HOST=0.0.0.0
+-PORT=8090
+-DEBUG=True
+-DEV_TOOLS_PROPS_CHECK=True
++PORT=8080
++DEBUG=False
++DEV_TOOLS_PROPS_CHECK=False
+diff --git a/devpage.py b/functions/devpage.py
+similarity index 100%
+rename from devpage.py
+rename to functions/devpage.py
+diff --git a/homepage.py b/functions/homepage.py
+similarity index 100%
+rename from homepage.py
+rename to functions/homepage.py
+diff --git a/leaderboard.py b/functions/leaderboard.py
+similarity index 100%
+rename from leaderboard.py
+rename to functions/leaderboard.py
+diff --git a/teampage.py b/functions/teampage.py
+similarity index 96%
+rename from teampage.py
+rename to functions/teampage.py
+index 8dca05e..5a3274b 100644
+--- a/teampage.py
++++ b/functions/teampage.py
+@@ -74,6 +74,19 @@ def teampage_row3(timePeriod, teamNamesMultiDropdown, testCaseType, startdate, e
+         data = []
+         dfTeamNone = pd.DataFrame(data, columns=[])
+         fig = go.Figure()
++        fig.update_layout(
++            xaxis={"visible": False},
++            yaxis={"visible": False},
++            annotations=[
++                {
++                    "text": "Select the Team(s) to see the plot!",
++                    "xref": "paper",
++                    "yref": "paper",
++                    "showarrow": False,
++                    "font": {"size": 28},
++                }
++            ],
++        )
+         return fig, dfTeamNone.to_json(orient="split")
+ 
+     if type(teamNamesMultiDropdown) == str:
+diff --git a/gunicorn_config.py b/gunicorn_config.py
+index b9a17e9..51f3dad 100644
+--- a/gunicorn_config.py
++++ b/gunicorn_config.py
+@@ -1,4 +1,4 @@
+-bind = "0.0.0.0:8090"
++bind = "0.0.0.0:8080"
+ workers = 4
+ threads = 4
+ timeout = 120
+diff --git a/myfile.txt b/myfile.txt
+deleted file mode 100644
+index e69de29..0000000
+-- 
+2.36.1
+
